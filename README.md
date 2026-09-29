@@ -5,6 +5,26 @@ website based on a custom CMS for listing links to dance events.
 
 ## Setup
 
+### Development container
+
+The reproducible development environment includes Ruby 4.0.7, Node 22,
+Yarn 4.2.2, PostgreSQL 14, and Firefox. Open the repository in an editor that
+supports the [Development Containers specification](https://containers.dev/),
+then rebuild/open it in the container. The container runs
+`bin/devcontainer-setup` after creation.
+
+Once setup completes:
+
+    bin/dev
+
+The application is available at <http://localhost:3000>. Run the unchanged
+upstream test and lint suite with:
+
+    bin/rake
+
+The PostgreSQL data and installed gems live in named container volumes. The
+application source remains in the repository checkout.
+
 ### Prerequisites
 
 - [Yarn](https://yarnpkg.com/en/docs/install/) is used in development.

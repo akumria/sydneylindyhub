@@ -1,0 +1,34 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    command: sleep infinity
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    volumes:
+      - ..:/workspace/sydneylindyhub:cached
+      - bundle:/usr/local/bundle
+
+  postgres:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_DB: soldn1_dev
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d soldn1_dev"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  bundle:
+  postgres-data:

@@ -1,0 +1,12 @@
+{
+  "name": "Sydney Lindy Hub",
+  "dockerComposeFile": "compose.yaml",
+  "service": "app",
+  "workspaceFolder": "/workspace/sydneylindyhub",
+  "shutdownAction": "stopCompose",
+  "containerEnv": {
+    "COREPACK_HOME": "/usr/local/share/corepack"
+  },
+  "postCreateCommand": "bin/devcontainer-setup",
+  "forwardPorts": [3000]
+}
