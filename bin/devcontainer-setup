@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+gem install bundler --version 4.0.17 --no-document
+bundle install
+
+# The official Node image includes Yarn Classic links into /opt. Only
+# /usr/local is copied into the Ruby image, so remove those dangling links and
+# let Corepack create project-aware shims instead.
+for yarn_link in /usr/local/bin/yarn /usr/local/bin/yarnpkg; do
+  if [[ -L "$yarn_link" && ! -e "$yarn_link" ]]; then
+    rm "$yarn_link"
+  fi
+done
+
+corepack enable
+corepack install
+yarn install --immutable
+yarn build
+
+if [[ ! -f .env ]]; then
+  cp .env.example .env
+fi
+
+bin/rails dartsass:build
+bin/rails db:prepare
+
+echo "Development environment is ready. Run bin/dev to start the application."
