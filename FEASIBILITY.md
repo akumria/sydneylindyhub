@@ -58,7 +58,7 @@ Upstream currently uses:
 - a scheduled Rails task for reminder delivery.
 
 The project now includes a reproducible development container with Ruby 4.0.7,
-Node 22, Yarn 4.2.2, PostgreSQL 14, and Firefox. Its one-command setup installs
+Node 22, Yarn 4.2.2, PostgreSQL 17, and Firefox. Its one-command setup installs
 the locked dependencies, builds the assets, and prepares both databases.
 
 The unchanged upstream baseline passes in this environment: 795 examples with

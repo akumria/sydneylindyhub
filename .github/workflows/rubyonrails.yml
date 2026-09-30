@@ -15,7 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:14-alpine
+        # Keep in step with .devcontainer/compose.yaml. PostgreSQL 14 reaches
+        # end of life on 2026-11-12.
+        image: postgres:17-alpine
         ports:
           - "5432:5432"
         env:
