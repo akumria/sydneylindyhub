@@ -44,8 +44,6 @@ jobs:
           cache: yarn
       - name: Install Javascript dependencies
         run: yarn install --frozen-lockfile
-      - name: Build Javascript
-        run: yarn build
       - name: Compile CSS
         run: bin/rails dartsass:build
       - name: Set up database schema
