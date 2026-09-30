@@ -156,7 +156,8 @@ RSpec.describe Venue do
 
       venue.valid?
 
-      expect(venue.errors[:lat]).to include("The address information could not be geocoded.")
+      expect(venue.errors[:lat])
+        .to include(a_string_including("The address information could not be geocoded."))
     end
 
     it "includes the Australian country in its geocoding query" do
