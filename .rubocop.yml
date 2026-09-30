@@ -148,6 +148,8 @@ Rails/StrongParametersExpect:
 RSpec/DescribeClass:
   Exclude:
     - spec/system/**/*_spec.rb
+    # Configuration specs describe a file, not a class.
+    - spec/config/**/*_spec.rb
 
 RSpec/ExampleLength:
   Max: 10
