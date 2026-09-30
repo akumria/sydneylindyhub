@@ -22,6 +22,14 @@ if [[ ! -f .env ]]; then
   cp .env.example .env
 fi
 
+# public/assets/ is gitignored build output, and nothing evicts files from it.
+# A checkout or reused volume can therefore carry assets compiled from sources
+# that have since changed, or been deleted, and they would be served in
+# preference to the current build. Nothing in the repository lives here - the
+# static error pages use public/application_http_errors.css - so clearing the
+# directory is safe.
+rm -rf public/assets
+
 bin/rails dartsass:build
 bin/rails db:prepare
 
