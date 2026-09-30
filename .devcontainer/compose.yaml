@@ -17,7 +17,9 @@ services:
       - bundle:/usr/local/bundle
 
   postgres:
-    image: postgres:14-alpine
+    # PostgreSQL 14 reaches end of life on 2026-11-12. 17 is supported until
+    # November 2029 and is what every managed host we are likely to use offers.
+    image: postgres:17-alpine
     mem_limit: 512m
     environment:
       POSTGRES_DB: soldn1_dev
