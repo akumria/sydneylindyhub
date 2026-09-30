@@ -7,7 +7,7 @@ RSpec.describe "Editors can list occasional events" do
     venue = create(
       :venue,
       name: "The Savoy Ballroom",
-      postcode: "WC2R 0EZ",
+      postcode: "2000",
       area: "Harlem"
     )
     social_organiser = create(:organiser)
@@ -48,20 +48,20 @@ RSpec.describe "Editors can list occasional events" do
     within "section.listings" do
       within page.first(".date_row") do
         expect(page).to have_text "Monday 2nd January"
-        expect(page).to have_text "WC2R"
+        expect(page).to have_text "Harlem"
         expect(page).to have_link "Stompin at the Savoy - The Savoy Ballroom in Harlem", href: "https://www.savoyballroom.com/stompin"
       end
 
       within page.all(".date_row")[1] do
         expect(page).to have_text "Monday 9th January"
-        expect(page).to have_text "WC2R"
+        expect(page).to have_text "Harlem"
         expect(page).to have_link "Stompin at the Savoy - The Savoy Ballroom in Harlem", href: "https://www.savoyballroom.com/stompin"
         expect(page).to have_text "Cancelled Stompin at the Savoy"
       end
 
       within page.all(".date_row")[2] do
         expect(page).to have_text "Monday 6th February"
-        expect(page).to have_text "WC2R"
+        expect(page).to have_text "Harlem"
         expect(page).to have_link "Stompin at the Savoy - The Savoy Ballroom in Harlem", href: "https://www.savoyballroom.com/stompin"
       end
     end

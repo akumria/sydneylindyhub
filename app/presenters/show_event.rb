@@ -61,11 +61,13 @@ class ShowEvent
            :course_length,
            :day,
            :social_organiser,
+           :source_notes,
            :title,
            :to_param,
            :url,
            :venue,
            :weekly?,
+           :last_verified_at,
            to: :event
 
   private

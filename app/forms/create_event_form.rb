@@ -28,6 +28,8 @@ class CreateEventForm
   attribute :cancellations, :string
   attribute :first_date, :string
   attribute :last_date, :string
+  attribute :last_verified_at, :datetime
+  attribute :source_notes, :string
 
   class << self
     def model_name
@@ -80,6 +82,7 @@ class CreateEventForm
       has_social: type_is_social_dance?,
       has_class: has_weekly_class?,
       has_taster: has_occasional_class?,
+      source_notes: source_notes.presence,
       course_length: course_length.presence&.to_i
     ).except(
       :event_type,

@@ -1,7 +1,9 @@
-# Swing Out London
+# Sydney Lindy Hub
 
-[Swing Out London](https://www.swingoutlondon.co.uk) is a swing dance listings
-website based on a custom CMS for listing links to dance events.
+Sydney Lindy Hub is an independent directory of swing dance classes and events
+in Sydney, NSW. It is a maintained fork of
+[Swing Out London](https://www.swingoutlondon.co.uk) and retains its compact
+calendar and map interface.
 
 ## Setup
 
@@ -17,8 +19,8 @@ Once setup completes:
 
     bin/dev
 
-The application is available at <http://localhost:3000>. Run the unchanged
-upstream test and lint suite with:
+The application is available at <http://localhost:3000>. Run the test and lint
+suite with:
 
     bin/rake
 

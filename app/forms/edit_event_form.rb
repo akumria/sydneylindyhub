@@ -4,7 +4,7 @@
 #
 # Responsible for managing validations and translating data between what is
 # required by the form and the ActiveRecord model.
-class EditEventForm
+class EditEventForm # rubocop:disable Metrics/ClassLength
   include ActiveModel::Model
   include ActiveModel::Attributes
   include Frequency
@@ -27,6 +27,8 @@ class EditEventForm
   attribute :cancellations, :string
   attribute :first_date, :string
   attribute :last_date, :string
+  attribute :last_verified_at, :datetime
+  attribute :source_notes, :string
 
   attr_accessor :event_type
 
@@ -88,6 +90,7 @@ class EditEventForm
       cancellations: parsed_cancellations,
       has_class: has_weekly_class?,
       has_taster: has_occasional_class?,
+      source_notes: source_notes.presence,
       course_length: course_length.presence&.to_i
     ).except(
       :social_has_class
@@ -149,6 +152,8 @@ class EditEventForm
       :class_organiser_id,
       :frequency,
       :day,
+      :last_verified_at,
+      :source_notes,
       to: :event
     )
 
@@ -195,7 +200,9 @@ class EditEventForm
         dates:,
         cancellations:,
         first_date:,
-        last_date:
+        last_date:,
+        last_verified_at:,
+        source_notes:
       }
     end
 

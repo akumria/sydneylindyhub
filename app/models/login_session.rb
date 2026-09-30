@@ -7,27 +7,19 @@ class LoginSession
     @logger = logger
   end
 
-  def log_in!(auth_id:, name:, token:, token_expires_at:)
+  def log_in!(email:, name:)
     request.reset_session # calling reset_session prevents "session fixation" attacks
     request.session[:user] = {
-      "auth_id" => auth_id,
-      "name" => name,
-      "token" => token,
-      "token_expires_at" => token_expires_at
+      "email" => email,
+      "name" => name
     }
-    log_message = "Logged in as auth id #{auth_id}"
-    logger.info(log_message)
-  end
-
-  def set_token!(token:, token_expires_at:)
-    request.session[:user]["token"] = token
-    request.session[:user]["token_expires_at"] = token_expires_at
+    logger.info("Logged in as #{email}")
   end
 
   def log_out!
-    auth_id = user.auth_id
+    email = user.email
     request.reset_session
-    logger.info("Logged out as auth id #{auth_id}")
+    logger.info("Logged out as #{email}")
   end
 
   def user
@@ -68,16 +60,12 @@ class LoginSession
       !!role&.admin?
     end
 
+    def email
+      user.fetch("email")
+    end
+
     def auth_id
-      user.fetch("auth_id")
-    end
-
-    def token
-      user.fetch("token")
-    end
-
-    def token_expires_at
-      user.fetch("token_expires_at", 0)
+      email
     end
 
     private
@@ -85,7 +73,7 @@ class LoginSession
     attr_reader :user, :role_finder
 
     def role
-      role_finder.find_by(facebook_ref: auth_id)
+      role_finder.find_by(email: email)
     end
   end
 
@@ -106,16 +94,12 @@ class LoginSession
       false
     end
 
+    def email
+      "NO EMAIL"
+    end
+
     def auth_id
-      "NO ID"
-    end
-
-    def token
-      "NO TOKEN"
-    end
-
-    def token_expires_at
-      0
+      email
     end
   end
 end

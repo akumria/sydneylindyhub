@@ -5,6 +5,8 @@ require "support/shoulda_matchers"
 require "spec/support/shared_examples/venues/validates_postcode_is_postcode_like"
 
 RSpec.describe Venue do
+  subject(:venue) { build(:venue) }
+
   describe "Associations" do
     it { is_expected.to have_many(:events).dependent(:restrict_with_exception) }
   end
@@ -16,9 +18,9 @@ RSpec.describe Venue do
 
     it_behaves_like "validates postcode is postcode-like", :venue
 
-    context "when given coordinates which are within London" do
-      it "is invalid" do
-        venue = build(:venue, name: "Heathrow Airport", lat: 51.479639, lng: -0.449026)
+    context "when given coordinates which are within Sydney" do
+      it "is valid" do
+        venue = build(:venue, name: "Sydney Town Hall", lat: -33.8732, lng: 151.2069)
 
         venue.valid?
 
@@ -26,7 +28,7 @@ RSpec.describe Venue do
       end
     end
 
-    context "when given coordinates which are far from the centre of London" do
+    context "when given coordinates which are far from the centre of Sydney" do
       it "is invalid" do
         venue = build(:venue, name: "WCJ", lat: 57.6832541, lng: 11.968709)
 
@@ -40,7 +42,7 @@ RSpec.describe Venue do
       before { stub_const("CITY", City.build_bristol) }
 
       it "is valid" do
-        venue = build(:venue, name: "Keynsham Leisure Centre", lat: 51.418499, lng: -2.517267)
+        venue = build(:venue, name: "Keynsham Leisure Centre", postcode: nil, lat: 51.418499, lng: -2.517267)
 
         venue.valid?
 
@@ -52,7 +54,7 @@ RSpec.describe Venue do
       before { stub_const("CITY", City.build_bristol) }
 
       it "is invalid" do
-        venue = build(:venue, name: "The Bath Priory", lat: 51.3828832, lng: -2.4014063)
+        venue = build(:venue, name: "The Bath Priory", postcode: nil, lat: 51.3828832, lng: -2.4014063)
 
         venue.valid?
 
@@ -83,11 +85,11 @@ RSpec.describe Venue do
 
   describe "#postcode" do
     it "strips whitespace before saving" do
-      venue = build(:venue, postcode: " \tN16 9RZ ")
+      venue = build(:venue, postcode: " \t2042 ")
 
       venue.valid?
 
-      expect(venue.postcode).to eq("N16 9RZ")
+      expect(venue.postcode).to eq("2042")
     end
   end
 
@@ -144,6 +146,23 @@ RSpec.describe Venue do
 
         expect(venue.coordinates).to be_nil
       end
+    end
+  end
+
+  describe "geocoding" do
+    it "reports an address that cannot be geocoded" do
+      venue = build(:venue, lat: nil, lng: nil)
+      allow(venue).to receive(:geocode).and_return(false)
+
+      venue.valid?
+
+      expect(venue.errors[:lat]).to include("The address information could not be geocoded.")
+    end
+
+    it "includes the Australian country in its geocoding query" do
+      venue = build(:venue)
+
+      expect(venue.send(:geocoding_info)).to eq("204 King Street, Newtown, 2042, Australia")
     end
   end
 end

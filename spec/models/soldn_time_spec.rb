@@ -71,6 +71,21 @@ RSpec.describe SOLDNTime, :time do
         end
       end
     end
+
+    context "when the timezone is Sydney" do
+      around do |example|
+        Time.use_zone("Australia/Sydney") { example.run }
+        Timecop.return
+      end
+
+      it "keeps the dance date before 4am across daylight-saving time", :aggregate_failures do
+        Timecop.travel(Time.zone.parse("October 4, 2026 03:30"))
+
+        expect(described_class.today.to_s).to eq "2026-10-03"
+        expect(Time.zone.parse("October 3, 2026 12:00").utc_offset).to eq(10.hours)
+        expect(Time.zone.parse("October 4, 2026 12:00").utc_offset).to eq(11.hours)
+      end
+    end
   end
 
   describe ".listing_dates" do

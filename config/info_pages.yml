@@ -18,6 +18,15 @@ about:
       - about_us_bristol
       - about_lindy
       - show_love_bristol
+  sydney:
+    content:
+      - intro_sydney
+      - goals
+      - swing_dancing_in_sydney
+    sidebar:
+      - about_us_sydney
+      - about_lindy
+      - show_love_sydney
 
 listings_policy:
   dir_path: "info/listings_policy"
@@ -39,6 +48,17 @@ listings_policy:
       - classes_text_bristol
       - classes_policy
       - socials_text_bristol
+      - socials_policy
+      - music_text
+    sidebar:
+      - swing_music
+  sydney:
+    content:
+      - intro_sydney
+      - location_text_sydney
+      - classes_text_sydney
+      - classes_policy
+      - socials_text_sydney
       - socials_policy
       - music_text
     sidebar:

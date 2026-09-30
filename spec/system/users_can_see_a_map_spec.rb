@@ -11,11 +11,11 @@ RSpec.describe "Users can view a map of upcoming events" do
       ]
       create(
         :social,
-        venue: build(
+        venue: create(
           :venue,
           name: "The Boudoir Club",
           address: "22 Night Street",
-          postcode: "ZZ2 2ZZ"
+          postcode: "2042"
         ),
         title: "Bedroom Bounce",
         url: "https://bb.com",
@@ -29,11 +29,11 @@ RSpec.describe "Users can view a map of upcoming events" do
         :social,
         :weekly,
         day: "Thursday",
-        venue: build(
+        venue: create(
           :venue,
           name: "The Alhambra",
-          address: "17-19 Argyle St, London",
-          postcode: "WC1H 8EJ"
+          address: "17-19 Argyle St, Sydney",
+          postcode: "2000"
         ),
         title: "Alhambra Thursdays",
         url: "https://at.com",
@@ -68,7 +68,7 @@ RSpec.describe "Users can view a map of upcoming events" do
       info_window = Capybara.string(info_window_string)
       aggregate_failures do
         expect(info_window).to have_text("17-19 Argyle St")
-        expect(info_window).to have_text("WC1H 8EJ")
+        expect(info_window).to have_text("2000")
         expect(info_window).to have_text("Thursday 6th June:")
         expect(info_window).to have_text("Thursday 13th June:")
         expect(info_window).to have_text("Alhambra Thursdays (class by Ann Johnson)").twice
@@ -79,7 +79,7 @@ RSpec.describe "Users can view a map of upcoming events" do
       info_window = Capybara.string(info_window_string)
       aggregate_failures do
         expect(info_window).to have_text("22 Night Street")
-        expect(info_window).to have_text("ZZ2 2ZZ")
+        expect(info_window).to have_text("2042")
         expect(info_window).to have_text("Saturday 8th June:")
         expect(info_window).to have_text(/Monday 17th June:.+Cancelled/m)
         expect(info_window).to have_text("New! Bedroom Bounce (Balboa taster)").twice
@@ -91,19 +91,19 @@ RSpec.describe "Users can view a map of upcoming events" do
       it "redirects to the main socials view" do
         visit "/map/socials/2015-12-25"
 
-        expect(page).to have_text("Swing Out London")
+        expect(page).to have_text("Sydney Lindy Hub")
         expect(page).to have_text("Lindy Map")
         expect(page).to have_current_path("/map/socials")
       end
     end
 
     it "viewing the map by clicking a postcode" do
-      venue = create(:venue, postcode: "ZZ2 2ZZ")
+      venue = create(:venue, postcode: "2042")
       create(:weekly_social, venue:)
 
       visit "/"
 
-      first(:link, "ZZ2 2ZZ").click
+      first(:link, venue.area).click
 
       expect(page).to have_text("Lindy Map")
     end
@@ -115,7 +115,7 @@ RSpec.describe "Users can view a map of upcoming events" do
         :venue,
         name: "The Daylight Centre",
         address: "9 Mornington Crescent",
-        postcode: "DA7 1GH"
+        postcode: "2153"
       )
       organiser = create(:organiser, name: "Morning Swing")
       create(
@@ -143,7 +143,7 @@ RSpec.describe "Users can view a map of upcoming events" do
       info_window_string = markers.first.fetch("infoWindowContent")
       info_window = Capybara.string(info_window_string)
       expect(info_window).to have_text("9 Mornington Crescent")
-      expect(info_window).to have_text("DA7 1GH")
+      expect(info_window).to have_text("2153")
       expect(info_window).to have_text("Wednesdays")
       expect(info_window).to have_link("Class (Balboa) with Morning Swing", href: "https://dlc.com")
     end
@@ -152,19 +152,19 @@ RSpec.describe "Users can view a map of upcoming events" do
       it "redirects to the main classes view" do
         visit "/map/classes/mOoonday"
 
-        expect(page).to have_text("Swing Out London")
+        expect(page).to have_text("Sydney Lindy Hub")
         expect(page).to have_text("Lindy Map")
         expect(page).to have_current_path("/map/classes")
       end
     end
 
     it "viewing the map by clicking a postcode" do
-      venue = create(:venue, postcode: "ZZ2 2ZZ")
+      venue = create(:venue, postcode: "2042")
       create(:class, venue:)
 
       visit "/"
 
-      click_on("ZZ2 2ZZ")
+      click_on(venue.area)
 
       expect(page).to have_text("Lindy Map")
     end

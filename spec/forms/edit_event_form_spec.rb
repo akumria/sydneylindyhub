@@ -114,7 +114,9 @@ RSpec.describe EditEventForm do
         dates: ["2020-12-10".to_date, "2021-01-12".to_date],
         cancellations: ["2020-12-10".to_date],
         first_date: "01/02/2018",
-        last_date: "10/02/2024"
+        last_date: "10/02/2024",
+        last_verified_at: nil,
+        source_notes: nil
       )
     end
 
@@ -161,7 +163,9 @@ RSpec.describe EditEventForm do
           dates: [],
           cancellations: [],
           first_date: "",
-          last_date: ""
+          last_date: "",
+          last_verified_at: nil,
+          source_notes: nil
         )
       end
     end

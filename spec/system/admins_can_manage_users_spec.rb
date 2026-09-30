@@ -2,193 +2,41 @@
 
 require "rails_helper"
 
-RSpec.describe "Admins can manage users" do
-  it "viewing a list of users", :vcr do
-    stub_facebook_config(app_secret!: "super-secret-secret")
-    stub_auth_hash(id: 98765987659876598)
-    create(:editor, facebook_ref: 12345678901234567)
-    create(:admin, facebook_ref: 98765987659876598)
+RSpec.describe "Admin user management" do
+  it "lists and adds approved editors by name and email" do
+    create(:editor, name: "Existing Editor", email: "existing@example.com")
+    skip_login("/admin/users", name: "Site Admin", email: "admin@example.com", admin: true)
 
-    visit "/login"
-    click_on "Log in"
+    expect(page).to have_text("Existing Editor")
+    expect(page).to have_text("existing@example.com")
 
-    VCR.use_cassette("fetch_facebook_names") do
-      click_on "Users"
-      wait_for_user_page_load
-    end
-
-    expect(page).to have_text("Dawn Hampton")
-    expect(page).to have_text("Herbert White (Admin)")
-  end
-
-  it "adding a role", :vcr do
-    stub_facebook_config(app_secret!: "super-secret-secret")
-    stub_auth_hash(id: 98765987659876598)
-    create(:admin, facebook_ref: 98765987659876598)
-
-    visit "/admin/users"
-
-    VCR.use_cassette("fetch_facebook_names") do
-      click_on "Log in"
-      wait_for_user_page_load
-
-      expect(page).to have_no_text("Dawn Hampton")
-    end
-
-    fill_in "Facebook ID", with: 12345678901234567
+    fill_in "Name", with: "New Editor"
+    fill_in "Email", with: "new.editor@example.com"
     select "Editor", from: "Role"
+    click_on "Add user"
 
-    VCR.use_cassette("fetch_facebook_names") do
-      click_on "Add user"
-
-      expect(page).to have_text("Dawn Hampton")
-    end
+    expect(page).to have_text("New Editor")
+    expect(Role.find_by(email: "new.editor@example.com")).to be_editor
   end
 
-  context "when the facebook ref is the wrong format" do
-    it "shows a validation error", :vcr do
-      stub_facebook_config(app_secret!: "super-secret-secret")
-      stub_auth_hash(id: 98765987659876598)
-      create(:admin, facebook_ref: 98765987659876598)
+  it "promotes and removes another editor" do
+    editor = create(:editor, name: "Other Editor", email: "other@example.com")
+    skip_login("/admin/users", name: "Site Admin", email: "admin@example.com", admin: true)
 
-      visit "/admin/users"
+    within("#user_#{editor.id}") { click_on "Make admin" }
+    expect(editor.reload).to be_admin
 
-      VCR.use_cassette("fetch_facebook_names") do
-        click_on "Log in"
-        wait_for_user_page_load
-      end
-
-      fill_in "Facebook ID", with: "dawn.hampton"
-      select "Editor", from: "Role"
-
-      VCR.use_cassette("fetch_facebook_names") do
-        click_on "Add user"
-
-        expect(page).to have_text("Facebook ID must contain only digits")
-      end
-    end
+    within("#user_#{editor.id}") { click_on "Delete" }
+    expect(Role.find_by(id: editor.id)).to be_nil
   end
 
-  it "removing a role", :js, :vcr do
-    stub_facebook_config(app_secret!: "super-secret-secret")
-    create(:editor, facebook_ref: 12345678901234567)
-    create(:admin, facebook_ref: 98765987659876598)
+  it "shows validation errors for an invalid email" do
+    skip_login("/admin/users", name: "Site Admin", email: "admin@example.com", admin: true)
 
-    Capybara.using_session("editor_session") do
-      stub_auth_hash(id: "12345678901234567")
-      visit "/login"
-      click_on "Log in"
+    fill_in "Name", with: "Invalid Editor"
+    fill_in "Email", with: "not-an-email"
+    click_on "Add user"
 
-      expect(page).to have_text("Events")
-    end
-
-    Capybara.using_session("admin_session") do
-      stub_auth_hash(id: "98765987659876598")
-      visit "/admin/users"
-
-      VCR.use_cassette("fetch_facebook_names") do
-        click_on "Log in"
-        wait_for_user_page_load
-      end
-
-      expect(page).to have_text("Dawn Hampton")
-      expect(page).to have_text("Herbert White (Admin)")
-
-      expect(user_row("Herbert White")).to have_no_text("Delete") # You shouldn't be able to delete yourself!
-
-      VCR.use_cassette("fetch_facebook_names") do
-        # We need the cassette here because the page gets reloaded after clicking the button
-        within(user_row("Dawn Hampton")) do
-          accept_alert { click_on("Delete") }
-        end
-
-        expect(page).to have_text("Herbert White (Admin)")
-        expect(page).to have_no_text("Dawn Hampton")
-      end
-    end
-
-    Capybara.using_session("editor_session") do
-      open_menu
-      click_on "Events"
-
-      expect(page).to have_text("Editor Login")
-    end
-  end
-
-  it "promoting an editor to an admin", :js, :vcr do
-    stub_facebook_config(app_secret!: "super-secret-secret")
-    create(:editor, facebook_ref: 12345678901234567)
-
-    VCR.use_cassette("fetch_facebook_names") do
-      skip_login("/admin/users", admin: true)
-      expect(page).to have_text("Dawn Hampton")
-    end
-
-    # The cassette covers the click as well as the assertions, because clicking makes a
-    # request which reloads the page.
-    VCR.use_cassette("fetch_facebook_names") do
-      within(user_row("Dawn Hampton")) do
-        accept_alert { click_on("Make admin") }
-      end
-
-      expect(page).to have_text("Dawn Hampton (Admin)")
-      expect(user_row("Dawn Hampton")).to have_no_text("Make admin")
-      expect(user_row("Dawn Hampton")).to have_link("Remove admin")
-    end
-  end
-
-  it "removing admin privileges from a user", :js, :vcr do
-    stub_facebook_config(app_secret!: "super-secret-secret")
-    create(:admin, facebook_ref: 12345678901234567)
-
-    VCR.use_cassette("fetch_facebook_names") do
-      skip_login("/admin/users", admin: true)
-      expect(page).to have_text("Dawn Hampton (Admin)")
-    end
-
-    VCR.use_cassette("fetch_facebook_names") do
-      within(user_row("Dawn Hampton")) do
-        click_on("Remove admin")
-      end
-
-      within(user_row("Dawn Hampton")) do
-        expect(page).to have_link("Make admin")
-        expect(page).to have_no_text("(Admin)")
-        expect(page).to have_no_text("Remove admin")
-      end
-    end
-  end
-
-  it "does not show the facebook test user", :vcr do
-    test_user_app_id = "12345678901234567"
-    stub_facebook_config(test_user_app_id:, app_secret!: "super-secret-secret")
-    create(:editor, facebook_ref: test_user_app_id)
-
-    VCR.use_cassette("fetch_facebook_names") do
-      skip_login("/admin/users", admin: true)
-      wait_for_user_page_load
-    end
-
-    expect(page).to have_no_text(test_user_app_id)
-  end
-
-  context "when logged in as a non-admin" do
-    it "does not allow access" do
-      skip_login(admin: false)
-
-      expect(page).to have_no_text("Users")
-
-      visit "/admin/users"
-
-      expect(page).to have_text("You are not authorised to view this page")
-    end
-  end
-
-  def user_row(user_name)
-    find("li.user", text: user_name)
-  end
-
-  def wait_for_user_page_load
-    expect(page).to have_button("Add user")
+    expect(page).to have_text("Email is invalid")
   end
 end

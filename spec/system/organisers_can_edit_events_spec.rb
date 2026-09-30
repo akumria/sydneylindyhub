@@ -153,7 +153,7 @@ RSpec.describe "Organisers can edit events" do
 
       visit("/events/#{event.id}/edit")
 
-      expect(page).to have_button("Log in")
+      expect(page).to have_button("Email me a sign-in link")
     end
   end
 

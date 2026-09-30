@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2024_09_09_162313) do
+ActiveRecord::Schema[8.0].define(version: 2026_09_30_090100) do
   create_schema "heroku_ext"
 
   # These are extensions that must be enabled in order to support this database
@@ -76,6 +76,8 @@ ActiveRecord::Schema[8.0].define(version: 2024_09_09_162313) do
     t.integer "social_organiser_id"
     t.string "organiser_token"
     t.string "reminder_email_address"
+    t.datetime "last_verified_at"
+    t.text "source_notes"
     t.index ["frequency", "day", "has_class"], name: "index_events_on_fq_and_day_and_has_class"
     t.index ["frequency", "day", "has_social"], name: "index_events_on_fq_and_day_and_has_social"
     t.index ["frequency", "has_class"], name: "index_events_on_fq_and_has_class"
@@ -95,10 +97,13 @@ ActiveRecord::Schema[8.0].define(version: 2024_09_09_162313) do
   end
 
   create_table "roles", force: :cascade do |t|
-    t.string "facebook_ref", null: false
+    t.string "facebook_ref"
     t.string "role", default: "editor", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "email", null: false
+    t.string "name", null: false
+    t.index "lower((email)::text)", name: "index_roles_on_lower_email", unique: true
     t.index ["facebook_ref"], name: "index_roles_on_facebook_ref", unique: true
   end
 

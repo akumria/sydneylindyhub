@@ -6,9 +6,8 @@ require "app/presenters/users_listing"
 RSpec.describe UsersListing do
   describe "#users" do
     it "returns a list of users" do
-      roles = [instance_double("Role", facebook_ref: 23, admin?: false)]
-      user_name_finder = instance_double("UserName", name_for: "Mildred Pollard")
-      listing = described_class.new(roles:, current_user_id: 17, user_name_finder:)
+      roles = [instance_double("Role", id: 23, email: "mildred@example.com", name: "Mildred Pollard", admin?: false)]
+      listing = described_class.new(roles:, current_user_id: "someone@example.com")
 
       results = listing.users
 
@@ -16,14 +15,14 @@ RSpec.describe UsersListing do
         id: 23,
         admin?: false,
         current?: false,
-        name: "Mildred Pollard"
+        name: "Mildred Pollard",
+        email: "mildred@example.com"
       )
     end
 
     it "identifies the current user" do
-      roles = [instance_double("Role", facebook_ref: 17, admin?: true)]
-      user_name_finder = instance_double("UserName", name_for: "Freida Washington")
-      listing = described_class.new(roles:, current_user_id: 17, user_name_finder:)
+      roles = [instance_double("Role", id: 17, email: "freida@example.com", name: "Freida Washington", admin?: true)]
+      listing = described_class.new(roles:, current_user_id: "freida@example.com")
 
       results = listing.users
 
@@ -31,7 +30,8 @@ RSpec.describe UsersListing do
         id: 17,
         admin?: true,
         current?: true,
-        name: "Freida Washington"
+        name: "Freida Washington",
+        email: "freida@example.com"
       )
     end
   end

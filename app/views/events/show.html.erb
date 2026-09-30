@@ -58,6 +58,14 @@
     <span>Url:</span>
     <%= link_to @event.url, @event.url %>
   </li>
+  <li>
+    <span>Last verified:</span>
+    <%= @event.last_verified_at&.to_fs(:long) || "Not yet verified" %>
+  </li>
+  <li>
+    <span>Source notes:</span>
+    <%= simple_format(@event.source_notes.presence || "None") %>
+  </li>
 </ol>
 
 <div class="actions">
@@ -76,7 +84,7 @@
         <% editor = Editor.build(audit) %>
         <p>
         <span class="timestamp">
-          [<%= audit.created_at.to_fs(:db) %>]
+          [<%= audit.created_at.in_time_zone.strftime("%Y-%m-%d %H:%M:%S") %>]
         </span>
         <span class="editor" title="<%= editor.auth_id %>">
           <%= editor.name %>

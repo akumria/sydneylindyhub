@@ -55,6 +55,10 @@ class EventListItem
     event.updated_at
   end
 
+  def last_verified_at
+    event.last_verified_at
+  end
+
   def html_id
     "event_#{event.id}"
   end
