@@ -24,6 +24,12 @@ suite with:
 
     bin/rake
 
+`bin/rake` also rebuilds the JavaScript bundle, because `jsbundling-rails` hangs
+`javascript:build` off the `spec` task and the browser-driven system specs load
+the compiled output. Running `bundle exec rspec` directly skips that step and
+would test the previous build, so prefer `bin/rake` unless you have just built
+the bundle yourself.
+
 The PostgreSQL data and installed gems live in named container volumes. The
 application source remains in the repository checkout.
 
