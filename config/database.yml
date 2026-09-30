@@ -33,3 +33,15 @@ test:
   encoding: unicode
   database: soldn1_test
   pool:     5
+
+production:
+  adapter:  postgresql
+  encoding: unicode
+  # Managed hosts hand out a connection string. Read it with [] rather than
+  # fetch: Rails evaluates the ERB in every section at boot, so fetch would
+  # raise in development and test too. Rails reports a missing production URL
+  # clearly enough on its own.
+  url:      <%= ENV["DATABASE_URL"] %>
+  # Stay ahead of Puma's thread count, which RAILS_MAX_THREADS sets. See the
+  # note in config/puma.rb.
+  pool:     <%= ENV.fetch("RAILS_MAX_THREADS", 3) + 2 %>
