@@ -186,6 +186,8 @@ see the upstream application with its tests passing.
 
 ### Phase 1: Sydney adaptation
 
+Status: complete.
+
 - Add Sydney city configuration, timezone, Australian addresses, and content.
 - Replace Facebook authentication.
 - Create original branding while preserving the listing layout.
@@ -196,6 +198,16 @@ see the upstream application with its tests passing.
 Exit condition: all upstream behaviour still passes, Sydney-specific tests
 cover addresses and daylight saving, and the desktop/mobile UI matches the
 reference structure.
+
+The first two are covered by the automated suite. The UI comparison is a
+manual review and is not yet recorded here.
+
+Testing both Australian daylight-saving transitions found a defect in the 4am
+listings-day rollover. It compared "4 hours ago" against local midnight, but a
+fixed duration is not a fixed number of hours on the clock across an offset
+change, so on the night the clocks go back the listings page showed the current
+date instead of the previous dance date between 3am and 4am. `SOLDNTime.today`
+now compares the local wall-clock hour directly.
 
 ### Phase 2: operational launch
 
@@ -231,6 +243,11 @@ an editor queue.
 
 ## Immediate next implementation step
 
-Phase 0 is complete. The next implementation step is the Sydney city,
-timezone, and Australian-address adaptation, starting with tests against the
-verified upstream baseline.
+Phases 0 and 1 are complete. The next implementation step is the Phase 2
+operational launch work: production PostgreSQL, maps, email, scheduled jobs,
+backups, monitoring, and domain/DNS, followed by loading and verifying the
+initial Sydney directory.
+
+One item still needs a decision before launch: `FORK_NOTICE.md` records that
+the public source location is not yet chosen, and the About page colophon
+cannot link to the corresponding source until a public repository exists.
