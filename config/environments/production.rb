@@ -46,8 +46,13 @@ Rails.application.configure do
   # Don't log any deprecations.
   config.active_support.report_deprecations = false
 
-  # Replace the default in-process memory cache store with a durable alternative.
-  config.cache_store = :mem_cache_store, ENV.fetch('MEMCACHIER_SERVERS', nil)
+  # The response cache is a speed optimisation, not a source of truth: keys are
+  # derived from the last audit record, so an edit changes the key, and a miss
+  # just re-renders. A single app machine does not need memcached for a handful
+  # of keys with an hour's TTL - that only pays off across several machines.
+  # Note that a missing or unreachable memcached fails silently, so the broken
+  # cache would not have announced itself.
+  config.cache_store = :memory_store
 
   # Replace the default in-process and non-durable queuing backend for Active Job.
   # config.active_job.queue_adapter = :resque
