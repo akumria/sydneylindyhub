@@ -1,0 +1,5 @@
+<p>Hello <%= @role.name %>,</p>
+
+<p><%= link_to "Sign in to #{I18n.t('site_name').fetch(CITY.key)}", verify_login_url(token: @token) %></p>
+
+<p>This one-time link expires in 15 minutes. If you did not request it, you can ignore this email.</p>

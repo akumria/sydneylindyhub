@@ -1,33 +1,16 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require "spec/support/facebook_helper"
 
-RSpec.describe "Editor Login Revocation" do
-  include FacebookHelper
+RSpec.describe "Editor account" do
+  it "lets an editor remove their approved login" do
+    editor = create(:editor, email: "editor@example.com", name: "Sydney Editor")
+    skip_login("/account", email: editor.email, name: editor.name)
 
-  it "Editors can deauthorise Swing Out Londons facebook permissions", :vcr do
-    stub_facebook_config(
-      api_base!: "https://graph.facebook.com/",
-      api_auth_token!: "super-secret-token",
-      app_secret!: "super-secret-secret"
-    )
-    stub_auth_hash(id: 12345678901234567)
-    create(:editor, facebook_ref: 12345678901234567)
+    click_on "Disable my login"
 
-    visit "/account"
-
-    click_on "Log in"
-
-    VCR.use_cassette("disable_login") do
-      click_on "Disable my login"
-    end
-
-    expect(page).to have_text("Editor Login")
-    expect(page).to have_text("Your login permissions have been revoked in Facebook")
-    expect(page).to have_button("Log in")
-
-    visit "/events"
-    expect(page).to have_button("Log in")
+    expect(page).to have_text("Your editor login has been disabled")
+    expect(page).to have_button("Email me a sign-in link")
+    expect(Role.find_by(email: editor.email)).to be_nil
   end
 end

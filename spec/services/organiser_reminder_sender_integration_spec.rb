@@ -31,8 +31,8 @@ RSpec.describe OrganiserReminderSender do
       email = ActionMailer::Base.deliveries.sole
       aggregate_failures do
         expect(email.to).to eq ["herbert@white.com"]
-        expect(email.from).to eq ["swingoutlondon@gmail.com"]
-        expect(email.subject).to eq 'Swing Out London is missing dates for "The Hot One"'
+        expect(email.from).to eq ["hello@sydneylindyhub.com"]
+        expect(email.subject).to eq 'Sydney Lindy Hub is missing dates for "The Hot One"'
 
         text_part, html_part = email.parts.map { |part| part.body.to_s }
 

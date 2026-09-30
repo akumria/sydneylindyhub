@@ -6,8 +6,6 @@ class Venue < ApplicationRecord
               longitude: :lng
   audited
 
-  POSTCODE_REGEXP = /\A^[a-z]{1,2}\d[a-z\d]?\s*\d[a-z]{2}\z/i
-
   has_many :events, dependent: :restrict_with_exception
 
   scope :all_with_classes_listed, -> { where(id: Event.listing_classes.select("distinct venue_id")) }
@@ -17,13 +15,13 @@ class Venue < ApplicationRecord
   validates :area, presence: true
   validates :name, presence: true
   validates :website, format: URI::DEFAULT_PARSER.make_regexp(%w[http https])
-  validates :postcode, format: { with: POSTCODE_REGEXP, allow_blank: true }
+  validates :postcode, format: { with: ->(_) { CITY.postcode_regexp }, allow_blank: true }
   validate :coordinates_within_the_city
 
   strip_attributes only: %i[name postcode area website]
 
   before_validation do
-    if (lat.nil? || lng.nil?) && !geocode
+    if address.present? && area.present? && (lat.nil? || lng.nil?) && !geocode
       errors.add :lat, "The address information could not be geocoded.
           Please check the address information or manually enter
           latitude and longitude"
@@ -63,6 +61,6 @@ class Venue < ApplicationRecord
   end
 
   def geocoding_info
-    [address, postcode].compact.join(",")
+    [address, area, postcode, CITY.country].compact_blank.uniq.join(", ")
   end
 end

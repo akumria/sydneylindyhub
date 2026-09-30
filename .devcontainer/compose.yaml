@@ -4,6 +4,7 @@ services:
       context: ..
       dockerfile: .devcontainer/Dockerfile
     command: sleep infinity
+    mem_limit: 2g
     depends_on:
       postgres:
         condition: service_healthy
@@ -17,6 +18,7 @@ services:
 
   postgres:
     image: postgres:14-alpine
+    mem_limit: 512m
     environment:
       POSTGRES_DB: soldn1_dev
       POSTGRES_PASSWORD: postgres

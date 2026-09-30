@@ -157,7 +157,13 @@
 // bigger than the page... */
 @media only screen and (width >= 900px) {
   body {
-    background: transparent url("flock_02_by_ZEBiii.jpg");
+    background-color: #102f3a;
+    background-image:
+      radial-gradient(circle at 25% 25%, rgba(231, 178, 75, 0.18) 0 2px, transparent 3px),
+      radial-gradient(circle at 75% 75%, rgba(231, 178, 75, 0.14) 0 2px, transparent 3px),
+      linear-gradient(45deg, transparent 46%, rgba(239, 218, 167, 0.08) 47% 53%, transparent 54%),
+      linear-gradient(-45deg, transparent 46%, rgba(239, 218, 167, 0.08) 47% 53%, transparent 54%);
+    background-size: 42px 42px;
 
     #page {
       width: 900px;

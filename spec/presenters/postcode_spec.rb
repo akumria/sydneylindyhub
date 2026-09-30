@@ -6,6 +6,8 @@ require "active_support/core_ext/object/blank"
 require "app/presenters/postcode"
 
 RSpec.describe Postcode do
+  let(:london) { City.build_london }
+
   describe "#short" do
     [
       { full: "E1 2JR", short: "E1" },
@@ -16,7 +18,7 @@ RSpec.describe Postcode do
       { full: "EC2A 3AY", short: "EC2A" }
     ].each do |data|
       it "returns the first part of the postcode: #{data[:full]}" do # rubocop:disable RSpec/RepeatedExample
-        expect(described_class.build(data[:full]).short).to eq data[:short]
+        expect(described_class.build(data[:full], city: london).short).to eq data[:short]
       end
     end
 
@@ -29,7 +31,7 @@ RSpec.describe Postcode do
       { full: "EC2A", short: "EC2A" }
     ].each do |data|
       it "handles when only half the postcode is given: #{data[:full]}" do # rubocop:disable RSpec/RepeatedExample
-        expect(described_class.build(data[:full]).short).to eq data[:short]
+        expect(described_class.build(data[:full], city: london).short).to eq data[:short]
       end
     end
 
@@ -42,7 +44,7 @@ RSpec.describe Postcode do
       { full: "EC2A3AY", short: "EC2A" }
     ].each do |data|
       it "handles postcodes without spaces: #{data[:full]}" do # rubocop:disable RSpec/RepeatedExample
-        expect(described_class.build(data[:full]).short).to eq data[:short]
+        expect(described_class.build(data[:full], city: london).short).to eq data[:short]
       end
     end
 
@@ -53,7 +55,7 @@ RSpec.describe Postcode do
       { full: "SE14\t6TA", short: "SE14" }
     ].each do |data|
       it "handles postcodes with extra spaces: #{data[:full]}" do # rubocop:disable RSpec/RepeatedExample
-        expect(described_class.build(data[:full]).short).to eq data[:short]
+        expect(described_class.build(data[:full], city: london).short).to eq data[:short]
       end
     end
 
@@ -63,7 +65,7 @@ RSpec.describe Postcode do
       { full: "Se14 6TA", short: "SE14" }
     ].each do |data|
       it "upcases the result: #{data[:full]}" do # rubocop:disable RSpec/RepeatedExample
-        expect(described_class.build(data[:full]).short).to eq data[:short]
+        expect(described_class.build(data[:full], city: london).short).to eq data[:short]
       end
     end
 
@@ -75,7 +77,7 @@ RSpec.describe Postcode do
     ].each do |string|
       context "when the string has weird formatting: #{string}" do
         it "raises an exception" do
-          expect { described_class.build(string).short }
+          expect { described_class.build(string, city: london).short }
             .to raise_error("Couldn't parse #{string} as a postcode")
         end
       end
@@ -84,7 +86,7 @@ RSpec.describe Postcode do
 
   describe "#description" do
     it "includes the full postcode" do
-      presenter = described_class.build("N16 8QR")
+      presenter = described_class.build("N16 8QR", city: london)
 
       expect(presenter.description).to eq("N16 8QR to be precise. Click to see the venue on a map")
     end
@@ -93,7 +95,7 @@ RSpec.describe Postcode do
   context "when the postcode was empty" do
     describe "#short" do
       it "is a secret" do
-        presenter = described_class.build("")
+        presenter = described_class.build("", city: london)
 
         expect(presenter.short).to eq("???")
       end
@@ -101,10 +103,32 @@ RSpec.describe Postcode do
 
     describe "#description" do
       it "explains that it's a secret" do
-        presenter = described_class.build("")
+        presenter = described_class.build("", city: london)
 
         expect(presenter.description).to eq("Bah - this event is too secret to have a postcode!")
       end
+    end
+  end
+
+  context "when the city is Sydney" do
+    it "uses the suburb for the compact label", :aggregate_failures do
+      presenter = described_class.build("2042", area: "Newtown")
+
+      expect(presenter.short).to eq("Newtown")
+      expect(presenter.description).to eq("Newtown NSW 2042 to be precise. Click to see the venue on a map")
+    end
+
+    it "uses the suburb when the street address is private", :aggregate_failures do
+      presenter = described_class.build(nil, area: "Newtown")
+
+      expect(presenter.short).to eq("Newtown")
+      expect(presenter.description).to eq("Newtown. Click to see the venue on a map")
+    end
+
+    it "explains when neither suburb nor address is public" do
+      presenter = described_class.build(nil)
+
+      expect(presenter.description).to eq("This event does not publicise its address.")
     end
   end
 end

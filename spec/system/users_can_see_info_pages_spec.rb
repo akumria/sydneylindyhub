@@ -9,7 +9,7 @@ RSpec.describe "Users can see Info pages" do
       click_on "About"
     end
 
-    expect(page).to have_text("About Swing Out London")
+    expect(page).to have_text("About Sydney Lindy Hub")
   end
 
   it "Users can see a listings policy" do
@@ -19,7 +19,7 @@ RSpec.describe "Users can see Info pages" do
     end
 
     expect(page).to have_text("Location")
-      .and have_text("swingoutlondon@gmail.com")
+      .and have_text("hello@sydneylindyhub.com")
   end
 
   context "when the city is Bristol" do

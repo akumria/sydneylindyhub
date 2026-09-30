@@ -17,7 +17,7 @@ module Maps
 
       def address_lines
         venue.address.split(",").map(&:strip).tap do |lines|
-          lines.delete("London")
+          lines.delete(I18n.t("city").fetch(CITY.key))
         end
       end
 

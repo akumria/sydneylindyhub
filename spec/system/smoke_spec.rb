@@ -16,7 +16,9 @@ RSpec.describe "Adding a new event", :js do
       key: :london, # for translations
       map_config:,
       max_radius_miles: 8,
-      opengraph_image: "swingoutlondon_og.png"
+      opengraph_image: "swingoutlondon_og.png",
+      postcode_regexp: UK_POSTCODE_REGEXP,
+      country: "United States"
     )
     stub_const("CITY", nyc)
 
@@ -24,10 +26,7 @@ RSpec.describe "Adding a new event", :js do
   end
 
   it "with a social and a dance class" do
-    stub_login
-    visit "/events"
-
-    click_on "Log in"
+    skip_login("/events")
 
     # VENUE
     open_menu

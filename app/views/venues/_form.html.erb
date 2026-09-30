@@ -18,6 +18,8 @@
     <%= f.label :area %>
     <% if CITY.london? %>
       <p class='help'>Use the nearest tube station unless there's something better</p>
+    <% elsif CITY.sydney? %>
+      <p class='help'>Use the Sydney suburb shown in the venue address</p>
     <% end %>
     <%= f.text_field :area %>
   </div>
@@ -31,9 +33,9 @@
         <%= f.label :lng, "Longitude", class: "inline_label" %>
         <%= f.text_field :lng, size: 15, class: "shortfield" %>
       </div>
-      <%= link_to "(get from web)", "https://www.freemaptools.com/convert-uk-postcode-to-lat-lng.htm", class: "normal-link" %>
+      <%= link_to "(get from web)", "https://www.google.com/maps", class: "normal-link" %>
     </div>
-    <p class='help'>If you leave Latitude and Longitude blank, they will be automatically calculated based on postcode</p>
+    <p class='help'>If you leave Latitude and Longitude blank, they will be calculated from the full address</p>
   </div>
   <div class='form-group'>
     <%= f.label :website %>

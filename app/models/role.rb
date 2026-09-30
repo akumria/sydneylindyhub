@@ -10,13 +10,8 @@ class Role < ApplicationRecord
     editor: EDITOR
   }
 
-  validates :facebook_ref, presence: true, uniqueness: true, numeric_string: { allow_blank: true }
-
+  normalizes :email, with: -> { it.strip.downcase }
+  validates :email, presence: true, email: true, uniqueness: { case_sensitive: false }
+  validates :name, presence: true
   validates :role, presence: true
-
-  class << self
-    def real
-      where.not(facebook_ref: Rails.configuration.x.facebook.test_user_app_id)
-    end
-  end
 end

@@ -7,14 +7,23 @@ class SessionsController < ApplicationController
   def new; end
 
   def create
-    user = AuthResponse.new(request.env)
-    after_login_path = return_to_session.path(fallback: events_path)
-    if SessionCreator.new(login_session:).create(user)
-      redirect_to after_login_path
-    else
-      flash.alert = unknown_facebook_id_message(user.id)
-      redirect_to action: :new
+    role = Role.find_by(email: params[:email].to_s.strip.downcase)
+
+    if role && development_login_bypass?
+      log_in(role)
+      return redirect_to return_to_session.path(fallback: events_path)
     end
+
+    send_login_link(role)
+    redirect_to login_path, notice: t("sessions.link_sent")
+  end
+
+  def verify
+    role = EditorLoginToken.role_for(params[:token])
+    return redirect_to(login_path, alert: t("sessions.invalid_link")) unless role
+
+    log_in(role)
+    redirect_to return_to_session.path(fallback: events_path)
   end
 
   def destroy
@@ -22,24 +31,18 @@ class SessionsController < ApplicationController
     redirect_to action: :new
   end
 
-  def failure
-    flash.alert = "There was a problem with your login to Facebook"
-    logger.warn("Authorisation failed with: #{params[:message]}")
-
-    redirect_to action: :new
-  end
-
   private
 
-  def unknown_facebook_id_message(user_id)
-    "Your Facebook ID for #{tc('site_name')} (#{user_id}) isn't in the approved list.\n" \
-      "\n" \
-      "If you've been invited to become an editor, " \
-      "please contact the main site admins and get them to add this ID. \n" \
-      "\n" \
-      "IF YOU ARE A TESTER FROM META:\n" \
-      "Please read the testing instructions which we've written for you on the app dashboard! \n" \
-      "We've given you credentials for a test user - PLEASE USE THOSE AND STOP DISABLING OUR ACCESS!"
+  def log_in(role)
+    login_session.log_in!(email: role.email, name: role.name)
+  end
+
+  def send_login_link(role)
+    LoginMailer.magic_link(role).deliver_now if role
+  end
+
+  def development_login_bypass?
+    Rails.env.development? && ENV.fetch("SKIP_LOGIN", "false") == "true"
   end
 
   def login_session

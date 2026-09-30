@@ -25,7 +25,7 @@
       <%= truncate(event.print_dates_rows, length: ((12 * 8) + 3)) %>
     </td>
     <td class="updated">
-      <%= I18n.l(event.updated_at) %>
+      <%= event.last_verified_at ? "Verified #{I18n.l(event.last_verified_at.to_date)}" : "Not verified" %>
     </td>
     <td class="actions last">
       <%= link_to "Show", event %>

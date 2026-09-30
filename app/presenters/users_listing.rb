@@ -3,17 +3,15 @@
 # Presenter for displaying a list of "Users" based on the {Role}s stored in the
 # database.
 class UsersListing
-  def initialize(current_user_id:, user_name_finder:, roles: Role.real)
+  def initialize(current_user_id:, roles: Role.all)
     @roles = roles
     @current_user_id = current_user_id
-    @user_name_finder = user_name_finder
   end
 
   class << self
     def for_user(session_user)
       new(
-        current_user_id: session_user.auth_id,
-        user_name_finder: UserName.as_user(session_user)
+        current_user_id: session_user.email
       )
     end
   end
@@ -22,7 +20,7 @@ class UsersListing
     @roles.map { build_user(it) }
   end
 
-  User = Data.define(:id, :admin?, :current?, :name) do
+  User = Data.define(:id, :admin?, :current?, :name, :email) do
     def to_param
       id.to_s
     end
@@ -30,15 +28,16 @@ class UsersListing
 
   private
 
-  attr_reader :current_user_id, :user_name_finder
+  attr_reader :current_user_id
 
   def build_user(role)
-    id = role.facebook_ref
+    id = role.id
     User.new(
-      name: user_name_finder.name_for(id),
+      name: role.name,
+      email: role.email,
       id:,
       admin?: role.admin?,
-      current?: id == current_user_id
+      current?: role.email == current_user_id
     )
   end
 end

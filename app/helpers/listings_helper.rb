@@ -2,7 +2,7 @@
 
 module ListingsHelper
   def social_listing(social, date)
-    postcode_part = postcode_link(social.venue_postcode, social.map_url(date))
+    postcode_part = postcode_link(social.venue_postcode, social.map_url(date), area: social.venue_area)
 
     details = tag.span class: "details" do
       if social.cancelled?
@@ -43,7 +43,11 @@ module ListingsHelper
   end
 
   def swingclass_listing(swingclass, day)
-    postcode_part = postcode_link(swingclass.venue_postcode, class_map_url(day, swingclass.venue))
+    postcode_part = postcode_link(
+      swingclass.venue_postcode,
+      class_map_url(day, swingclass.venue),
+      area: swingclass.venue_area
+    )
 
     details = tag.span class: "details" do
       concat swingclass_link(swingclass)
@@ -102,8 +106,8 @@ module ListingsHelper
     tag.strong("Cancelled", class: "cancelled_label")
   end
 
-  def postcode_link(postcode_string, map_url = nil)
-    postcode = Postcode.build(postcode_string)
+  def postcode_link(postcode_string, map_url = nil, area: nil)
+    postcode = Postcode.build(postcode_string, area:)
 
     link_to_unless map_url.nil?, postcode.short, map_url, title: postcode.description, class: "postcode" do
       tag.abbr(postcode.short, title: postcode.description, class: "postcode")
