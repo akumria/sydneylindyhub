@@ -33,11 +33,9 @@ Rails.application.routes.draw do
   get "privacy" => "info#privacy"
 
   get "login" => "sessions#new"
-  get "auth/facebook/callback" => "sessions#create"
-  get "auth/failure" => "sessions#failure"
+  post "login" => "sessions#create"
+  get "login/verify" => "sessions#verify", as: :verify_login
   delete "logout" => "sessions#destroy", as: "logout"
-
-  put "facebook_access_token" => "facebook_access_tokens#refresh", as: "facebook_access_token"
 
   resource :account, only: %i[show destroy], controller: :users
 

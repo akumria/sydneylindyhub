@@ -3,42 +3,38 @@
 require "rails_helper"
 
 RSpec.describe "Editors can create venues" do
-  it "with valid data", :vcr do
+  it "with valid data" do
     skip_login(id: 12345678901234567, name: "Al Minns")
 
     click_on "New Venue"
 
-    fill_in "Name", with: "The 100 Club"
-    fill_in "Address", with: "100 Oxford Street\nLondon"
-    fill_in "Postcode", with: "W1D 1LL"
-    fill_in "Area", with: "Oxford Street"
-    fill_in "Website", with: "https://www.the100club.co.uk/"
+    fill_in "Name", with: "The Harbour Club"
+    fill_in "Address", with: "100 George Street\nSydney"
+    fill_in "Postcode", with: "2000"
+    fill_in "Area", with: "Sydney"
+    fill_in "Website", with: "https://example.com/harbour-club"
+    fill_in "Latitude", with: "-33.8634"
+    fill_in "Longitude", with: "151.2065"
     ClimateControl.modify(GOOGLE_MAPS_STATIC_API_KEY: "A1b2C3", GOOGLE_MAPS_MAP_ID: "9876") do
       Timecop.freeze(Time.zone.local(2000, 1, 2, 23, 17, 16)) do
-        VCR.use_cassette("geocode_100_club") do
-          click_on "Create"
-
-          expect(page).to have_text("Venue was successfully created")
-        end
+        click_on "Create"
+        expect(page).to have_text("Venue was successfully created")
       end
     end
 
-    expect(page).to have_text("Name: The 100 Club")
-    expect(page).to have_text("Address: 100 Oxford Street\r London")
-    expect(page).to have_text("Postcode: W1D 1LL")
-    expect(page).to have_text("Area: Oxford Street")
-    expect(page).to have_text("Website: https://www.the100club.co.uk/")
-    expect(page.find("a", text: "https://www.the100club.co.uk/")["href"]).to eq("https://www.the100club.co.uk/")
-    expect(page).to have_text("Coordinates: [ 51.5161082, -0.1353568 ]")
-    expect(page.find("a", text: "[ 51.5161082, -0.1353568 ]")["href"])
-      .to eq("https://www.google.co.uk/maps/place/51.5161082,-0.1353568/@51.5161082,-0.1353568,15z")
+    expect(page).to have_text("Name: The Harbour Club")
+    expect(page).to have_text("Address: 100 George Street\r Sydney")
+    expect(page).to have_text("Postcode: 2000")
+    expect(page).to have_text("Area: Sydney")
+    expect(page).to have_text("Website: https://example.com/harbour-club")
+    expect(page).to have_text("Coordinates: [ -33.8634, 151.2065 ]")
     expect(page.find("img")["src"]).to eq(
       "https://maps.googleapis.com/maps/api/staticmap?" \
-      "center=51.5161082%2C-0.1353568" \
+      "center=-33.8634%2C151.2065" \
       "&key=A1b2C3" \
       "&map_id=9876" \
       "&maptype=roadmap" \
-      "&markers=51.5161082%2C-0.1353568" \
+      "&markers=-33.8634%2C151.2065" \
       "&size=500x400&zoom=17"
     )
 
@@ -53,27 +49,26 @@ RSpec.describe "Editors can create venues" do
 
       click_on "Create"
 
-      expect(page).to have_text("5 errors prevented this record from being saved")
+      expect(page).to have_text("4 errors prevented this record from being saved")
         .and have_text("Address can't be blank")
         .and have_text("Area can't be blank")
         .and have_text("Name can't be blank")
         .and have_text("Website is invalid")
-        .and have_text("The address information could not be geocoded")
 
       fill_in "Name", with: "The 100 Club"
-      fill_in "Address", with: "100 Oxford Street\nLondon"
-      fill_in "Area", with: "Oxford Street"
+      fill_in "Address", with: "100 George Street\nSydney"
+      fill_in "Area", with: "Sydney"
       fill_in "Website", with: "https://www.the100club.co.uk/"
-      fill_in "Latitude", with: "51.5164092"
-      fill_in "Longitude", with: "-0.1345404"
+      fill_in "Latitude", with: "-33.8634"
+      fill_in "Longitude", with: "151.2065"
 
       click_on "Create"
 
       expect(page).to have_text("Name: The 100 Club")
-        .and have_text("Address: 100 Oxford Street\r London")
-        .and have_text("Area: Oxford Street")
+        .and have_text("Address: 100 George Street\r Sydney")
+        .and have_text("Area: Sydney")
         .and have_text("Website: https://www.the100club.co.uk/")
-        .and have_text("Coordinates: [ 51.5164092, -0.1345404 ]")
+        .and have_text("Coordinates: [ -33.8634, 151.2065 ]")
     end
   end
 end

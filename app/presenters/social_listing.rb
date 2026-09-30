@@ -11,6 +11,7 @@ class SocialListing
   delegate(
     :id,
     :title,
+    :venue_area,
     :venue_postcode,
     :url,
     :new?,

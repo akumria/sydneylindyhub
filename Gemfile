@@ -15,8 +15,6 @@ gem "jbuilder"
 gem "jsbundling-rails"
 gem "json", "< 3" # This line no longer needed after upgrading to ruby 8.1
 gem "memcachier"
-gem "omniauth-facebook"
-gem "omniauth-rails_csrf_protection"
 gem "pg"
 gem "premailer-rails"
 gem "puma"

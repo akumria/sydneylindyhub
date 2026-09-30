@@ -35,8 +35,8 @@ RSpec.describe Maps::Marker::Venue do
       expect(marker_info.address_lines).to eq(["77 Bedford Hill", "Balham"])
     end
 
-    it 'removes "London" from the address lines' do
-      venue = instance_double("Venue", address: "1 Chancery Court, London")
+    it 'removes "Sydney" from the address lines' do
+      venue = instance_double("Venue", address: "1 Chancery Court, Sydney")
 
       marker_info = described_class.new(venue)
 

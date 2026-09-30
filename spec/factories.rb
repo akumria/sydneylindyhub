@@ -64,10 +64,11 @@ FactoryBot.define do
 
   factory :venue do
     name { "test_venue" }
-    area { "test_area" }
-    address { "London" }
-    lat { 51.5423414 }
-    lng { -0.078134 }
+    area { "Newtown" }
+    address { "204 King Street" }
+    postcode { "2042" }
+    lat { -33.8970 }
+    lng { 151.1799 }
     website { "http://www.example.com" }
   end
 
@@ -120,7 +121,8 @@ FactoryBot.define do
   factory :audit
 
   factory :role, aliases: %i[editor] do
-    facebook_ref { Faker::Facebook.uid }
+    sequence(:email) { |number| "editor#{number}@example.com" }
+    name { Faker::Name.name }
 
     role { "editor" }
 

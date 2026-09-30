@@ -192,7 +192,7 @@ section.listings {
 
   .details {
     display: block;
-    margin-left: 3.4em;
+    margin-left: 6.8em;
   }
 
   .cancelled_label,
@@ -219,10 +219,11 @@ section.listings {
     border: borders.$thin-border;
     display: block;
     float: left;
-    width: 3.5em;
-
-    // N.B. Longest displaying postcode is NW1W. This won't fit in this space,
-    // but we don't have any postcodes in that area a.t.m.
+    width: 8.5em;
+    max-width: 8.5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     position: relative;
     bottom: 0.1em;
     padding-left: 0.3em;

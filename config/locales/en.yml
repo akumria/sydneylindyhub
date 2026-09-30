@@ -12,24 +12,26 @@ en:
       long: "%B %d, %Y"
       day_name: "%A" # Wednesday
   site_name:
+    sydney: Sydney Lindy Hub
     london: Swing Out London
     bristol: Swing Out Bristol
   site_url:
+    sydney: "https://sydneylindyhub.au"
     london: "https://www.swingoutlondon.co.uk"
     bristol: "https://www.swingoutbristol.org"
   email_address:
+    sydney: "hello@sydneylindyhub.au"
     london: "swingoutlondon@gmail.com"
     bristol: "swingoutbristol@gmail.com"
   twitter_handle:
+    sydney: "sydneylindyhub"
     london: "swingoutlondon"
     bristol: "swingoutbristol"
   city:
+    sydney: Sydney
     london: London
     bristol: Bristol
   activerecord:
-    attributes:
-      role:
-        facebook_ref: "Facebook ID"
     errors:
       models:
         event:
@@ -67,7 +69,10 @@ en:
         social_dance: Social dance
         weekly_class: Weekly class
   audit_log:
-    timezone_note: Entries are show in London time
+    timezone_note: Entries are shown in Sydney time
+  sessions:
+    link_sent: If that email is approved, a sign-in link is on its way.
+    invalid_link: That sign-in link is invalid or has expired.
 
   organiser_mailer:
     reminder_email:

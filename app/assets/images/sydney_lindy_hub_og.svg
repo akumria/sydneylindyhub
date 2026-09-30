@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#102f3a"/>
+  <g fill="#e7b24b" opacity="0.22">
+    <circle cx="90" cy="90" r="8"/><circle cx="1110" cy="90" r="8"/>
+    <circle cx="90" cy="540" r="8"/><circle cx="1110" cy="540" r="8"/>
+  </g>
+  <rect x="54" y="54" width="1092" height="522" fill="#f7e5b8" stroke="#171717" stroke-width="7"/>
+  <rect x="70" y="70" width="1060" height="490" fill="none" stroke="#171717" stroke-width="2"/>
+  <text x="600" y="270" text-anchor="middle" font-family="Futura, Jost, sans-serif" font-size="92" letter-spacing="8" fill="#171717">SYDNEY LINDY HUB</text>
+  <text x="600" y="355" text-anchor="middle" font-family="Futura, Jost, sans-serif" font-size="34" letter-spacing="4" fill="#171717">CLASSES, SOCIALS &amp; LIVE JAZZ</text>
+  <path d="M270 410H930" stroke="#171717" stroke-width="5"/>
+</svg>

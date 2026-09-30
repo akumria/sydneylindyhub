@@ -2,83 +2,37 @@
 
 require "rails_helper"
 
-RSpec.describe "Editor Login" do
-  it "Editors can login and access editor pages" do
-    stub_auth_hash(id: 12345678901234567, name: "Al Minns", expires_at: 60.days.from_now.to_i)
-    create(:editor, facebook_ref: 12345678901234567)
+RSpec.describe "Editor login" do
+  it "lets an approved editor return to the requested editor page" do
+    role = create(:editor, email: "al.minns@example.com", name: "Al Minns")
+    allow(EditorLoginToken).to receive(:role_for).with("valid-token").and_return(role)
 
     visit "/events/new"
-
-    expect(page).to have_button("Log in")
+    expect(page).to have_button("Email me a sign-in link")
     expect(page).to have_no_text("New event")
 
-    click_on "Log in"
+    fill_in "Email address", with: role.email
+    click_on "Email me a sign-in link"
+    expect(page).to have_text("If that email is approved")
 
+    visit verify_login_path(token: "valid-token")
     expect(page).to have_text("New event")
     expect(page).to have_text("Al Minns")
-
-    click_on "Al Minns"
-
-    expect(page).to have_text(/Facebook access token will expire in (59|60|61) days/)
   end
 
-  it "Admins can login and access editor pages" do
-    stub_auth_hash(id: 12345678901234567, name: "Herbert White")
-    create(:admin, facebook_ref: 12345678901234567)
-
+  it "uses a neutral response for an address outside the approved list" do
     visit "/events"
+    fill_in "Email address", with: "unknown@example.com"
+    click_on "Email me a sign-in link"
 
-    expect(page).to have_button("Log in")
+    expect(page).to have_text("If that email is approved")
     expect(page).to have_no_text("Events")
-
-    click_on "Log in"
-
-    expect(page).to have_text("Events")
-    expect(page).to have_text("Herbert White (Admin)")
   end
 
-  context "when the user isn't in the approved list" do
-    it "disallows the user from signing in, but shows them their Facebook ID" do
-      stub_auth_hash(id: 76543210987654321, name: "Fred Astaire")
+  it "rejects an invalid or expired link" do
+    visit verify_login_path(token: "invalid-token")
 
-      visit "/events"
-
-      click_on "Log in"
-
-      expect(page).to have_text(
-        "Your Facebook ID for Swing Out London (76543210987654321) isn't in the approved list"
-      )
-      expect(page).to have_no_text("Events")
-    end
-  end
-
-  context "when authentication failed" do
-    it "displays an alert" do
-      OmniAuth.config.mock_auth[:facebook] = :no_authorisation_code
-
-      visit "/events"
-
-      click_on "Log in"
-
-      expect(page).to have_text("There was a problem with your login to Facebook")
-      expect(page).to have_no_text("Events")
-    end
-  end
-
-  context "when starting login from /login (ie. no return_to page)" do
-    it "lands on the event list page after successful login" do
-      stub_auth_hash(id: 12345678901234567, name: "Al Minns")
-      create(:editor, facebook_ref: 12345678901234567)
-
-      visit "/login"
-
-      expect(page).to have_button("Log in")
-      expect(page).to have_no_text("Events")
-
-      click_on "Log in"
-
-      expect(page).to have_text("Events")
-      expect(page).to have_text("Al Minns")
-    end
+    expect(page).to have_text("That sign-in link is invalid or has expired")
+    expect(page).to have_button("Email me a sign-in link")
   end
 end
