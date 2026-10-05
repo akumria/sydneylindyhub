@@ -199,8 +199,7 @@ Exit condition: all upstream behaviour still passes, Sydney-specific tests
 cover addresses and daylight saving, and the desktop/mobile UI matches the
 reference structure.
 
-The first two are covered by the automated suite. The UI comparison is a
-manual review and is not yet recorded here.
+The first two are covered by the automated suite. The third is recorded below.
 
 Testing both Australian daylight-saving transitions found a defect in the 4am
 listings-day rollover. It compared "4 hours ago" against local midnight, but a
@@ -208,6 +207,60 @@ fixed duration is not a fixed number of hours on the clock across an offset
 change, so on the night the clocks go back the listings page showed the current
 date instead of the previous dance date between 3am and 4am. `SOLDNTime.today`
 now compares the local wall-clock hour directly.
+
+#### UI review
+
+Reviewed 5 October 2026 with `yarn screenshots`
+(`scripts/screenshots.mjs`), which captures all seventeen public and editor
+pages at 1280px and 375px and reports each page's measured document width.
+Comparing those against upstream `a580ae3c` confirms the fork changes three
+things and nothing structural:
+
+- the desktop background, now a CSS gradient rather than the credited wallpaper
+  that commit `93f27de2` removed;
+- the listing location label, widened from a 3.5em postcode column to an 8.5em
+  suburb column, with `.details` moved from 3.4em to 6.8em to match;
+- the listing's "Last updated" column, which now reports the verification date
+  rather than `updated_at`.
+
+Everything else - the two-column listings grid at desktop and its single-column
+stack at mobile, the day/date list structure, the cancelled and new badges, the
+navigation, the info pages and their tables, the CMS layout - is unchanged from
+upstream. The reference structure holds.
+
+Three findings, one fixed:
+
+- **Fixed.** The footer credited `@dgmstuart` as the site's author, which is
+  true upstream and false here, on every page. It now reads "Maintained by
+  volunteers" and links to the contact page, still keyed off `CITY.sydney?` so
+  London and Bristol keep their credit. `spec/requests/footer_spec.rb` covers
+  both branches.
+- **Accepted.** The suburb column ellipsises a name wider than 8.5em, so
+  "Wharfords Point" renders as `WHARFORD P…`. Measured against 34 Greater
+  Sydney suburb names at the real 10.5px uppercase listing font, that is one
+  name. The upstream comment this replaced conceded the same limit for UK
+  postcodes ("Longest displaying postcode is NW1W... we don't have any
+  postcodes in that area a.t.m."), and the `abbr` title still carries the full
+  text, so the hover and screen-reader text is complete.
+- **Not reviewable here.** The map page needs a Google Maps JavaScript key,
+  which `.env.example` leaves blank. Both captures show Google's "This page
+  can't load Google Maps correctly" panel over the sidebar, and the sidebar and
+  header behind it are correct. The map's own layout is a Phase 2 item, once
+  keys exist.
+
+Two further observations, neither a defect:
+
+- The editor tables have a hard `min-width: 1200px`
+  (`app/assets/stylesheets/application_cms.scss:80`, unchanged from upstream),
+  so `/events`, `/venues`, `/organisers` and the audit log overflow a 375px
+  viewport to 1210-1269px. Editors are expected on a desktop; the public site
+  overflows nothing.
+- `Rack::Attack` throttles at 5 requests per IP per 2 seconds
+  (`config/initializers/rack_attack.rb:38`), and one listings page view makes
+  seven requests, so a capture can screenshot a page with a `429`'d image in it
+  - a broken asterisk icon that looks like a styling bug. The harness now
+  reports failed subresources for this reason. Worth knowing before launch: a
+  real reader on a cold cache can hit the same limit.
 
 ### Phase 2: operational launch
 

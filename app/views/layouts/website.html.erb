@@ -30,8 +30,13 @@
     <footer class="website-footer">
       <%= render "layouts/website/navigation", nav_id: "footer_nav", nav_class: "navigation secondary-nav", links: main_navigation_links << privacy_policy_link %>
       <address>
-        Site by
-        <%= link_to "@dgmstuart", "https://www.threads.net/@dgmstuart" %>.
+        <% if CITY.sydney? %>
+          Maintained by volunteers.
+          <%= link_to "Get in touch", about_path %>.
+        <% else %>
+          Site by
+          <%= link_to "@dgmstuart", "https://www.threads.net/@dgmstuart" %>.
+        <% end %>
       </address>
       <p>Map icon by <a href="https://icons8.com">icons8</a></p>
       <p class="last-updated">
