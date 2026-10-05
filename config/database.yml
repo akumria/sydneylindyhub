@@ -43,5 +43,7 @@ production:
   # clearly enough on its own.
   url:      <%= ENV["DATABASE_URL"] %>
   # Stay ahead of Puma's thread count, which RAILS_MAX_THREADS sets. See the
-  # note in config/puma.rb.
-  pool:     <%= ENV.fetch("RAILS_MAX_THREADS", 3) + 2 %>
+  # note in config/puma.rb. Rails evaluates the ERB in every section at boot, so
+  # this has to be valid even when RAILS_MAX_THREADS is unset - and an
+  # environment variable is always a String, hence the to_i.
+  pool:     <%= ENV.fetch("RAILS_MAX_THREADS", 3).to_i + 2 %>
