@@ -242,11 +242,23 @@ Three findings, one fixed:
   postcodes ("Longest displaying postcode is NW1W... we don't have any
   postcodes in that area a.t.m."), and the `abbr` title still carries the full
   text, so the hover and screen-reader text is complete.
-- **Not reviewable here.** The map page needs a Google Maps JavaScript key,
-  which `.env.example` leaves blank. Both captures show Google's "This page
-  can't load Google Maps correctly" panel over the sidebar, and the sidebar and
-  header behind it are correct. The map's own layout is a Phase 2 item, once
-  keys exist.
+- **Reviewed, and one setting is not optional.** With a Maps JavaScript key in
+  `.env`, the map renders correctly at both widths: tiles, the red pin, the
+  info window listing the venue address and each day's dances including the
+  cancelled one, the 14-day sidebar, and the Socials/Classes switch. The page
+  initially showed Google's "This page can't load Google Maps correctly" panel
+  even with a valid key, because `AdvancedMarkerElement` needs a map ID and
+  `GOOGLE_MAPS_MAP_ID` was blank - Google logged "The map is initialized
+  without a valid Map ID, which will prevent use of Advanced Markers" and
+  rendered tiles without markers. `DEMO_MAP_ID` is enough to fix it in
+  development. Production needs a real map ID from
+  [Map management](https://console.cloud.google.com/google/maps-apis/studio),
+  and this belongs with the rest of the Phase 2 maps work.
+- **Not reviewable here.** The Maps Static API is separate from the JavaScript
+  key and the demo key does not cover it, so the venue-page map image
+  (`app/models/static_map.rb`) is still unexercised. `StaticMap#url` returns nil
+  without a key and `app/views/venues/show.html.erb:19` skips the image, so
+  those pages render correctly - just without the picture.
 
 Two further observations, neither a defect:
 
