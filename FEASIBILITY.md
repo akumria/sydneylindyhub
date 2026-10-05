@@ -304,3 +304,11 @@ initial Sydney directory.
 One item still needs a decision before launch: `FORK_NOTICE.md` records that
 the public source location is not yet chosen, and the About page colophon
 cannot link to the corresponding source until a public repository exists.
+
+The launch domain is `sydneylindyhub.com`. It is registered, with CloudNS
+nameservers and Namecheap-hosted mail, but has no A record, so DNS still has to
+point it at wherever the app is deployed. `sydneylindyhub.au`, which the fork
+previously named in its locale file, was never registered; `config/locales/en.yml`
+now carries the `.com` domain and address. Set `CANONICAL_HOST` to whichever of
+the two hosts is canonical, since the sitemap, the audit log feed, and the URLs
+in reminder emails are all generated from it.
