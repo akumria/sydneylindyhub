@@ -304,3 +304,8 @@ initial Sydney directory.
 One item still needs a decision before launch: `FORK_NOTICE.md` records that
 the public source location is not yet chosen, and the About page colophon
 cannot link to the corresponding source until a public repository exists.
+
+The launch domain is `sydneylindyhub.com`. `config/locales/en.yml` carries the
+domain and the contact address. Set `CANONICAL_HOST` to whichever of the two
+hosts is canonical, since the sitemap, the audit log feed, and the URLs in
+reminder emails are all generated from it.
