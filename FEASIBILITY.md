@@ -126,8 +126,14 @@ account creation in the first release.
 ### Maps and email
 
 The application currently expects three Google Maps values and SMTP
-credentials. Restrict browser keys by production hostname and server keys by
-API/IP as appropriate. Use a transactional email provider rather than a
+credentials. Only two of the three maps values are keys that must differ in
+restriction, not in identity: one API key can carry API restrictions for both
+the Maps JavaScript API and the Maps Static API, but the browser key is exposed
+in every `/map` page's HTML while the static key only appears in server-built
+URLs, so Google recommends restricting them separately - by hostname for the
+browser key, and by API or IP for the server key. The third value is a map ID,
+which is created per platform under Map management and carries the style
+rather than any credential. Use a transactional email provider rather than a
 personal Gmail account for organiser reminders.
 
 ## Data entry for launch
@@ -251,14 +257,30 @@ Three findings, one fixed:
   `GOOGLE_MAPS_MAP_ID` was blank - Google logged "The map is initialized
   without a valid Map ID, which will prevent use of Advanced Markers" and
   rendered tiles without markers. `DEMO_MAP_ID` is enough to fix it in
-  development. Production needs a real map ID from
-  [Map management](https://console.cloud.google.com/google/maps-apis/studio),
-  and this belongs with the rest of the Phase 2 maps work.
-- **Not reviewable here.** The Maps Static API is separate from the JavaScript
-  key and the demo key does not cover it, so the venue-page map image
-  (`app/models/static_map.rb`) is still unexercised. `StaticMap#url` returns nil
-  without a key and `app/views/venues/show.html.erb:19` skips the image, so
-  those pages render correctly - just without the picture.
+  development; production needs one from
+  [Map management](https://console.cloud.google.com/google/maps-apis/studio).
+  Note that a map ID is created per platform, and this application feeds a
+  single `GOOGLE_MAPS_MAP_ID` to both the JavaScript map and the static one, so
+  styling them differently means splitting that variable.
+- **Vector maps need hardware acceleration, and fall back to raster without
+  it.** The production map ID is vector. In the devcontainer Google logs
+  "Attempted to load a Vector Map, but failed. Falling back to Raster" and
+  renders the raster tiles instead. That is the documented behaviour, not a
+  misconfiguration: Google's WebGL support page states that hardware
+  acceleration must be enabled or "vector maps will revert to raster", and
+  WebGL here resolves to SwiftShader - software rasterisation - rather than a
+  GPU. The map ID itself is valid, which the capture shows: Google's
+  `mapConfigs:batchGet` returns 200 for it. Readers with a GPU get vector;
+  everyone else gets the raster fallback, which is functionally identical for
+  this page. Google also notes that vector map support on mobile web "is still
+  experimental", so expect raster on phones regardless.
+- **The venue-page map image is editor-only, not a public page.**
+  `VenuesController` inherits `CmsBaseController`, which redirects to `/login`
+  when signed out, and no public view links to a venue page. The static map on
+  `app/views/venues/show.html.erb:34` is therefore an editor's check that the
+  coordinates match the address, never seen by a reader. That makes the Maps
+  Static API a low-priority dependency: `StaticMap#url` returns nil without a
+  key and the view skips the image, so the page still works.
 
 Two further observations, neither a defect:
 
