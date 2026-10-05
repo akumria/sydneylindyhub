@@ -55,6 +55,7 @@ const CMS_PATHS = [
   'events/new',
   'venues',
   'venues/new',
+  'venues/1',
   'organisers',
   'organisers/new',
   'account',
