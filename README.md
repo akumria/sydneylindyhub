@@ -10,8 +10,9 @@ calendar and map interface.
 ### Development container
 
 The reproducible development environment includes Ruby 4.0.7, Node 22,
-Yarn 4.2.2, PostgreSQL 14, and Firefox. Open the repository in an editor that
-supports the [Development Containers specification](https://containers.dev/),
+Yarn 4.2.2, PostgreSQL 17, Firefox, and Chromium. Open the repository in an
+editor that supports the
+[Development Containers specification](https://containers.dev/),
 then rebuild/open it in the container. The container runs
 `bin/devcontainer-setup` after creation.
 
@@ -64,6 +65,9 @@ Run the tests and linters:
 
     bin/rake
 
+The devcontainer also installs Chromium, which only the screenshot harness
+needs - see "Reviewing the UI" below.
+
 ### Local development
 
 See [`Procfile.dev`](Procfile.dev): run each command in its own terminal, or
@@ -75,6 +79,29 @@ run them together using the heroku CLI (installed as part of the bundle):
 
 Emails sent by the site can be previewed in the development environment at
 [/rails/mailers](http://localhost:3000/rails/mailers).
+
+#### Reviewing the UI
+
+`yarn screenshots` captures every public and editor page at 1280px and 375px
+into `tmp/ui-review`, and prints the measured document width of each. Use it to
+review a layout change, or before a release, since the specs assert on text and
+not on how the page looks.
+
+It signs in as `editor@example.com`, which only works with `SKIP_LOGIN=true`
+(the `.env.example` default). Override with `EDITOR_EMAIL`, `BASE_URL` and
+`OUT_DIR`.
+
+The report flags two things worth reading rather than skimming: a page whose
+document is wider than its viewport, and a failed subresource. A failed
+subresource matters because `Rack::Attack` throttles at 5 requests per 2
+seconds and a single page view can exceed that, so a 429 leaves a page
+screenshotting a broken image with no error anywhere else. Re-run after a pause
+if the report lists one.
+
+This uses Playwright rather than the specs' Selenium driver because Firefox
+clamps its window to about 450px wide: `resize_to(375, 800)` lands on 450, and
+`-width`/`--window-size` are ignored at launch, so a "phone" screenshot is
+silently a desktop one. The specs are unaffected and stay on Selenium.
 
 ## Environment Variables
 
@@ -106,7 +133,7 @@ are not included in the .env.example file:
 
 ## Environments
 
-There are currently 3 sites deployed using this codebase on heroku:
+Upstream deploys three sites using this codebase on heroku:
 
 - London Production: https://www.swingoutlondon.co.uk/ (heroku app: `soldneu`)
 - Bristol Production: https://www.swingoutbristol.org/ (heroku app:
