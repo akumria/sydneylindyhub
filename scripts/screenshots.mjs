@@ -36,6 +36,9 @@ const WIDTHS = { desktop: 1280, mobile: 375 };
 // indistinguishable from a real layout bug unless you check the response codes.
 // So: record every non-200 subresource, and pace the page loads to stay under.
 const THROTTLE_MS = 700;
+// The map page needs a few seconds for tiles, markers and the auto-opened info
+// window; every other page is static and settled long before this.
+const SETTLE_MS = Number(process.env.SETTLE_MS ?? 5000);
 
 const PUBLIC_PAGES = {
   listings: '/',
@@ -80,10 +83,24 @@ function watchResponses(page) {
   return bad;
 }
 
+async function settle(page) {
+  // Wait for the document and its subresources, then for webfonts. Do NOT use
+  // waitUntil: 'networkidle': the Google map keeps requests in flight
+  // indefinitely (tile prefetch), so the map page never reaches networkidle and
+  // the capture times out instead of being written.
+  await page.waitForLoadState('load');
+  try {
+    await page.evaluate(() => document.fonts.ready);
+  } catch {
+    // fonts.ready rejects on some pages; the load state above is enough.
+  }
+  await sleep(SETTLE_MS);
+}
+
 async function capture(context, name, path) {
   const page = await context.newPage();
   const bad = watchResponses(page);
-  const response = await page.goto(BASE + path, { waitUntil: 'networkidle' });
+  const response = await page.goto(BASE + path, { waitUntil: 'load' });
   const status = response?.status() ?? 0;
 
   if (status !== 200) {
@@ -92,6 +109,8 @@ async function capture(context, name, path) {
     await sleep(THROTTLE_MS);
     return;
   }
+
+  await settle(page);
 
   const measured = await page.evaluate(() => ({
     scrollWidth: document.documentElement.scrollWidth,
