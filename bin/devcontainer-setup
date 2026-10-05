@@ -18,6 +18,10 @@ corepack install
 yarn install --immutable
 yarn build
 
+# Chromium for scripts/screenshots.mjs. The Dockerfile sets
+# PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD so this is the only place it is fetched.
+yarn playwright install --with-deps chromium
+
 if [[ ! -f .env ]]; then
   cp .env.example .env
 fi
