@@ -19,7 +19,7 @@ RSpec.describe "Users can see Info pages" do
     end
 
     expect(page).to have_text("Location")
-      .and have_text("hello@sydneylindyhub.au")
+      .and have_text("hello@sydneylindyhub.com")
   end
 
   context "when the city is Bristol" do

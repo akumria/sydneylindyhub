@@ -128,8 +128,10 @@ are not included in the .env.example file:
     used for exception reporting. This value can be found in Account Settings
     => Account Access Tokens in your Rollbar account.
   - `CANONICAL_HOST` - all variations of the domain will be `301` redirected
-    to this - eg. set it to `www.swingoutlondon.co.uk` to have
-    `swingoutlondon.co.uk` redirect to www.
+    to this. Set it to `www.sydneylindyhub.com` to have
+    `sydneylindyhub.com` redirect to www, or the reverse. The sitemap, the audit
+    log feed, and the URLs in reminder emails are all built from it, so it must
+    match the domain actually served.
 
 ## Environments
 
