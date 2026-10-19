@@ -135,6 +135,8 @@ are not included in the .env.example file:
 
 ## Environments
 
+- Sydney Production: [Sydney Lindy Hub](https://www.sydneylindyhub.com/) (Cloudflare Pages)
+
 Upstream deploys three sites using this codebase on heroku:
 
 - London Production: https://www.swingoutlondon.co.uk/ (heroku app: `soldneu`)
