@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# Local-only smoke test. Copies the dev DB into disposable PostgreSQL, never deploys.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+suffix="$$"
+network="slh-container-check-$suffix"
+database="slh-check-db-$suffix"
+web="slh-check-web-$suffix"
+job="slh-check-job-$suffix"
+output="$PWD/tmp/container-proof-$suffix"
+mkdir -p "$output"
+cleanup() {
+  podman logs "$web" > "$output/web.log" 2>&1 || true
+  podman rm -f "$web" "$job" "$database" >/dev/null 2>&1 || true
+  podman network rm "$network" >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+podman network create "$network" >/dev/null
+podman run -d --name "$database" --network "$network" \
+  -e POSTGRES_PASSWORD=local-check-only -e POSTGRES_DB=slh_check \
+  postgres:17-alpine >/dev/null
+for attempt in {1..60}; do
+  if podman exec "$database" pg_isready -U postgres >/dev/null 2>&1; then break; fi
+  sleep 1
+done
+# Read-only source dump; restored into a separate, disposable database.
+podman exec devcontainer-postgres-1 pg_dump -U postgres --no-owner --no-acl soldn1_dev \
+  | podman exec -i "$database" psql -U postgres -d slh_check -v ON_ERROR_STOP=1 > "$output/restore.log"
+secret="$(openssl rand -hex 64)"
+environment=(--network "$network" -e "DATABASE_URL=postgresql://postgres:local-check-only@$database/slh_check"
+  -e "SECRET_KEY_BASE=$secret" -e CANONICAL_HOST=www.sydneylindyhub.com
+  -e EDITORIAL_HOST=editor.example.test -e RAILS_ASSUME_SSL=true)
+podman run --rm "${environment[@]}" localhost/sydneylindyhub-web:local \
+  bin/rails runner 'abort "Database query failed" unless Event.count.positive?; puts "Database connection OK: #{Event.count} events"'
+podman run -d --name "$web" "${environment[@]}" -e PORT=8097 localhost/sydneylindyhub-web:local >/dev/null
+for attempt in {1..60}; do
+  if [ "$(podman exec "$web" curl -s -o /dev/null -w '%{http_code}' http://localhost:8097/up 2>/dev/null)" = "200" ]; then break; fi
+  sleep 1
+done
+test "$(podman exec "$web" curl -s -o /dev/null -w '%{http_code}' http://localhost:8097/up)" = "200"
+podman exec "$web" curl -fsS http://localhost:8097/up > "$output/health.html"
+podman exec "$web" curl -fsS -H 'Host: editor.example.test' "http://$web:8097/" > "$output/home.html"
+rg -q 'Gustavo Swing' "$output/home.html"
+podman exec "$web" ruby -e 'abort "Must not run as root" if Process.uid.zero?; puts "Non-root process OK"'
+podman run --name "$job" "${environment[@]}" -e OUTPUT=/app/tmp/container-export \
+  localhost/sydneylindyhub-publisher:local bin/publish-static-site
+podman cp "$job:/app/tmp/container-export" "$output/export"
+rg -q 'Gustavo Swing' "$output/export/index.html"
+podman exec "$web" sh -c 'test ! -e /app/.env && test ! -e /app/config/master.key && test ! -d /app/.git && ! command -v node'
+podman exec "$web" curl -fsS -H 'Host: editor.example.test' "http://$web:8097/login" > "$output/login.html"
+podman stats --no-stream --format '{{.Name}} {{.MemUsage}}' "$web" > "$output/memory.txt"
+printf 'PASS: production boot, custom PORT, health, proxy HTTPS, database, non-root user and complete publication checks. Evidence: %s\n' "$output"
