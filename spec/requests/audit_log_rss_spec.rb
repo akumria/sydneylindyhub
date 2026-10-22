@@ -4,7 +4,7 @@ require "rails_helper"
 
 RSpec.describe "Audit Log RSS feed" do
   around do |example|
-    ClimateControl.modify(CANONICAL_HOST: "sydneylindyhub.com") { example.run }
+    ClimateControl.modify(CANONICAL_HOST: "sydneylindyhub.com", EDITORIAL_HOST: "edit.sydneylindyhub.com") { example.run }
   end
 
   it "displays an RSS feed of audit events" do # rubocop:disable RSpec/ExampleLength
@@ -33,7 +33,7 @@ RSpec.describe "Audit Log RSS feed" do
     aggregate_failures do
       expect(response.media_type).to eq("application/atom+xml")
       expect(response.body).to include("Sydney Lindy Hub Audit Log")
-      expect(response.body).to include("https://sydneylindyhub.com/audit_log.atom")
+      expect(response.body).to include("https://edit.sydneylindyhub.com/audit_log.atom")
       expect(response.body).to include("Create Class (id: #{dance_class.id})")
       expect(response.body).to include("Delete Venue (id: #{venue.id})")
       expect(response.body).to include("Delete Organiser (id: #{organiser.id})")

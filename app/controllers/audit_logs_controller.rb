@@ -17,9 +17,9 @@ class AuditLogsController < ApplicationController
     RSS::Maker.make("atom") do |maker|
       maker.channel.author = tc("site_name")
       maker.channel.updated = Audit.maximum(:created_at).iso8601
-      maker.channel.id = tc("site_url")
+      maker.channel.id = UrlHelpers.new.root_url
       link = maker.channel.links.new_link
-      link.href = URI.join(tc("site_url"), "/audit_log.atom").to_s
+      link.href = UrlHelpers.new.audit_log_url(format: :atom)
       link.rel = "self"
       maker.channel.title = "#{tc('site_name')} Audit Log"
       maker.channel.description = "Audit Log for #{tc('site_name')}"

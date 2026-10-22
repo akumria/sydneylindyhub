@@ -8,7 +8,7 @@ RSpec.describe OrganiserReminderSender do
 
   describe "INTEGRATION TEST" do
     around do |example|
-      ClimateControl.modify CANONICAL_HOST: "example.com" do
+      ClimateControl.modify EDITORIAL_HOST: "example.com" do
         example.run
       end
     end

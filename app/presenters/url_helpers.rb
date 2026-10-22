@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Class which can be used to build canonical URLs using the URL helpers defined
+# Class which can be used to build editorial URLs using the URL helpers defined
 # in the routes.
 #
 # This is useful for writing objects which are truly isolated from Rails (which
@@ -10,6 +10,6 @@ class UrlHelpers
   include Rails.application.routes.url_helpers
 
   def default_url_options
-    { protocol: "https", host: ENV.fetch("CANONICAL_HOST") }
+    { protocol: "https", host: ENV.fetch("EDITORIAL_HOST", "localhost:3000") }
   end
 end

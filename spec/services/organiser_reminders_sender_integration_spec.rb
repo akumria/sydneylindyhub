@@ -8,7 +8,7 @@ RSpec.describe OrganiserRemindersSender do
 
   describe "send_unlisted" do
     around do |example|
-      ClimateControl.modify(CANONICAL_HOST: "www.swingoutlondon.co.uk") { example.run }
+      ClimateControl.modify(EDITORIAL_HOST: "www.swingoutlondon.co.uk") { example.run }
     end
 
     context "when there are no events with organiser emails" do

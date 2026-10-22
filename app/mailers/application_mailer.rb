@@ -6,4 +6,8 @@ class ApplicationMailer < ActionMailer::Base
 
   default from: -> { tc("email_address") }
   layout "mailer"
+
+  def default_url_options
+    super.except(:port).merge(UrlHelpers.new.default_url_options)
+  end
 end

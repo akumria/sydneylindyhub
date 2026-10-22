@@ -3,6 +3,12 @@
 require "rails_helper"
 
 RSpec.describe "Editor login" do
+  around do |example|
+    ClimateControl.modify(CANONICAL_HOST: "sydneylindyhub.com", EDITORIAL_HOST: "edit.sydneylindyhub.com") do
+      example.run
+    end
+  end
+
   it "emails a magic link to an approved editor", :aggregate_failures do
     role = create(:editor, email: "editor@example.com")
 
@@ -13,6 +19,7 @@ RSpec.describe "Editor login" do
     expect(response).to redirect_to(login_path)
     expect(flash[:notice]).to include("If that email is approved")
     expect(ActionMailer::Base.deliveries.last.to).to eq([role.email])
+    expect(ActionMailer::Base.deliveries.last.body.encoded).to include("https://edit.sydneylindyhub.com/")
   end
 
   it "uses the same response for an unknown address without sending mail", :aggregate_failures do

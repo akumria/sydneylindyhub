@@ -2,7 +2,8 @@
 
 require_relative "config/environment"
 
-use Rack::CanonicalHost, ENV['CANONICAL_HOST'] if Rails.env.production? && ENV['CANONICAL_HOST']
+# Public pages are hosted separately. Rails must retain the editorial hostname;
+# production host authorization is configured in config/environments/production.rb.
 
 run Rails.application
 Rails.application.load_server
