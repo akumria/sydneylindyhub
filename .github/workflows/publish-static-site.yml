@@ -1,0 +1,99 @@
+name: Publish static site
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never interrupt an upload or let two publications overwrite one another.
+concurrency:
+  group: production-static-publication
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    env:
+      CANONICAL_HOST: www.sydneylindyhub.com
+      EDITORIAL_HOST: edit.sydneylindyhub.com
+      CLOUDFLARE_ACCOUNT_ID: 8c3ce6c47f419321900a6ecd5148b0f6
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Check publication configuration
+        env:
+          DATABASE_URL: ${{ secrets.PUBLICATION_DATABASE_URL }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          GOOGLE_MAPS_JAVASCRIPT_API_KEY: ${{ secrets.GOOGLE_MAPS_JAVASCRIPT_API_KEY }}
+          GOOGLE_MAPS_MAP_ID: ${{ vars.GOOGLE_MAPS_MAP_ID }}
+        run: |
+          for name in DATABASE_URL CLOUDFLARE_API_TOKEN GOOGLE_MAPS_JAVASCRIPT_API_KEY GOOGLE_MAPS_MAP_ID; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing publication configuration: $name"
+              exit 1
+            fi
+          done
+
+      - name: Build production publisher
+        run: docker build --target publisher --tag slh-publisher:ci .
+
+      - name: Export and validate public site
+        env:
+          DATABASE_URL: ${{ secrets.PUBLICATION_DATABASE_URL }}
+          GOOGLE_MAPS_JAVASCRIPT_API_KEY: ${{ secrets.GOOGLE_MAPS_JAVASCRIPT_API_KEY }}
+          GOOGLE_MAPS_MAP_ID: ${{ vars.GOOGLE_MAPS_MAP_ID }}
+          BANNER_HEAD: ${{ vars.BANNER_HEAD }}
+          BANNER_BODY: ${{ vars.BANNER_BODY }}
+        run: |
+          docker run --name static-export \
+            -e DATABASE_URL -e CANONICAL_HOST -e EDITORIAL_HOST \
+            -e GOOGLE_MAPS_JAVASCRIPT_API_KEY -e GOOGLE_MAPS_MAP_ID \
+            -e BANNER_HEAD -e BANNER_BODY -e OUTPUT=/app/tmp/site \
+            slh-publisher:ci bash -euc '
+              export SECRET_KEY_BASE="$(ruby -rsecurerandom -e "print SecureRandom.hex(64)")"
+              bin/rails runner '\''abort "Refusing to publish an empty database" unless Event.exists?'\''
+              exec bin/publish-static-site
+            '
+          mkdir -p tmp
+          docker cp static-export:/app/tmp/site tmp/site
+
+      # Only the upload container receives Cloudflare credentials. It has no DB credentials.
+      - name: Deploy checked artifact to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          DEPLOY_SHA: ${{ github.sha }}
+        run: |
+          docker run --rm \
+            -e CLOUDFLARE_API_TOKEN -e CLOUDFLARE_ACCOUNT_ID -e DEPLOY_SHA \
+            --volume "$PWD/tmp/site:/site:ro" \
+            slh-publisher:ci bash -euc '
+              yarn dlx wrangler@4.151.3 pages deploy /site \
+                --project-name sydneylindyhub --branch main --commit-hash "$DEPLOY_SHA"
+            '
+
+      - name: Verify public deployment
+        run: |
+          curl --fail --silent --show-error --retry 5 --retry-all-errors \
+            https://www.sydneylindyhub.com/ > /dev/null
+          curl --fail --silent --show-error --retry 5 --retry-all-errors \
+            https://www.sydneylindyhub.com/map/classes.json > /dev/null
+          for attempt in {1..6}; do
+            echo "Checking publication manifest (attempt $attempt)"
+            curl --fail --silent --show-error \
+              https://www.sydneylindyhub.com/export-manifest.json -o tmp/live-manifest.json
+            if cmp -s tmp/site/export-manifest.json tmp/live-manifest.json; then break; fi
+            sleep 5
+          done
+          cmp tmp/site/export-manifest.json tmp/live-manifest.json
+          echo "Published https://www.sydneylindyhub.com/" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove temporary export container
+        if: always()
+        run: docker rm -f static-export 2>/dev/null || true

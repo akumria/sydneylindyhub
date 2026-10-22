@@ -76,3 +76,36 @@ email delivery, backups and production-domain checks remain stage 2 work.
   health requests to the separate public site. Rails host authorization remains.
 - Temporary containers and network were removed; development DB was not modified.
   No cloud provisioning or live upload was performed.
+
+## Manual GitHub publication
+
+`.github/workflows/publish-static-site.yml` adds **Publish static site → Run
+workflow**. It runs only from `main`, serializes production publications, builds
+the publisher image, queries the source database, exports and checks all public
+pages, then uploads that exact artifact. No schedule or push trigger is enabled.
+The job does not migrate, seed, or import the database.
+
+Configure the GitHub `production` environment (or repository-level fallbacks):
+
+| Setting | Type | Purpose |
+| --- | --- | --- |
+| `PUBLICATION_DATABASE_URL` | Secret | Reachable PostgreSQL containing the real listings; use a read-only role and TLS. |
+| `CLOUDFLARE_API_TOKEN` | Secret | Account → Cloudflare Pages → Edit, scoped to the configured account. |
+| `GOOGLE_MAPS_JAVASCRIPT_API_KEY` | Secret | Existing public browser key, restricted to the public site's domains/APIs. |
+| `GOOGLE_MAPS_MAP_ID` | Variable | Existing public map ID. |
+| `BANNER_HEAD`, `BANNER_BODY` | Optional variables | Public banner content. |
+
+The Cloudflare account, project, public and editorial hosts are explicit in the
+workflow. The export receives no Cloudflare credentials; the upload receives no
+database credentials. A temporary Rails signing secret is generated inside the
+export container; it is not the editorial application's session secret.
+
+The workflow and its Dockerfile/application dependencies must be committed and
+available on the repository's default branch before GitHub can expose the manual
+trigger. Our laptop's `soldn1_dev` database is not accessible to GitHub-hosted
+runners: first provide a populated, reachable database such as Neon. An empty
+DB is rejected; never substitute sample seed data for researched listings.
+
+Run through GitHub Actions, or `gh workflow run publish-static-site.yml --ref main`.
+See [GitHub manual workflows](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow)
+and [Cloudflare Direct Upload CI](https://developers.cloudflare.com/pages/how-to/use-direct-upload-with-continuous-integration/).
