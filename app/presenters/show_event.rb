@@ -32,6 +32,8 @@ class ShowEvent
   end
 
   def event_type
+    return "Workshop" if event.workshop?
+
     activities = []
     activities << "social" if event.has_social?
     activities << "taster" if event.has_taster?

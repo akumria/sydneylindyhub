@@ -30,6 +30,7 @@ class ValidSocialOrClass < ActiveModel::Validator
   end
 
   def no_one_off_workshops(event)
+    return if event.respond_to?(:workshop?) && event.workshop?
     return unless event.has_class? && one_off?(event) && !event.has_social?
 
     message = <<~MESSAGE.chomp

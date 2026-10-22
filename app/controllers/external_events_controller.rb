@@ -25,7 +25,10 @@ class ExternalEventsController < CmsBaseController
   private
 
   def find_event
-    Event.find_by!(organiser_token: params[:id])
+    event = Event.find_by!(organiser_token: params[:id])
+    raise ActiveRecord::RecordNotFound if event.workshop?
+
+    event
   end
 
   def authenticate

@@ -11,7 +11,7 @@ class Event < ApplicationRecord # rubocop:disable Metrics/ClassLength
   belongs_to :venue
   belongs_to :class_organiser, class_name: "Organiser", optional: true
   belongs_to :social_organiser, class_name: "Organiser", optional: true
-  has_many :event_instances, dependent: :destroy
+  has_many :event_instances, dependent: :destroy, autosave: true
   has_many :email_deliveries, dependent: :destroy
 
   validates :frequency, presence: true
@@ -31,12 +31,23 @@ class Event < ApplicationRecord # rubocop:disable Metrics/ClassLength
 
   validates_with ValidSocialOrClass
   validates_with ValidWeeklyEvent
+  validates_with ValidWorkshopException
 
   enum(:day, DAYNAMES.index_by { it })
 
-  strip_attributes only: %i[title url]
+  strip_attributes only: %i[title url workshop_exception_reason]
+
+  def workshop?
+    workshop_exception_reason.present?
+  end
 
   class << self
+    def workshops_on_date(date)
+      occasional.where.not(workshop_exception_reason: [nil, ""])
+                .joins(:event_instances).where(event_instances: { date: })
+                .select("events.*", "event_instances.cancelled")
+    end
+
     def socials_on_date(date)
       weekly_socials_on(date).includes(:venue) +
         occasional_socials_on(date).includes(:venue)
@@ -72,7 +83,7 @@ class Event < ApplicationRecord # rubocop:disable Metrics/ClassLength
   end
 
   def must_be_weekly_if_no_social
-    return if has_social? || weekly? || frequency.nil?
+    return if workshop? || has_social? || weekly? || frequency.nil?
 
     errors.add(:frequency, "must be 1 (weekly) for events without a social")
   end

@@ -24,18 +24,22 @@
     The listings below are only a guide. Always check the source website before making any plans
   </p>
 
-  <section id="social_dances" class="listings">
-    <%= socialsh2(@socials_dates, @today, { class: "listings-heading" }) do %>
-      <em>Dance!</em>
-      Clubs and Social dancing
-    <% end %>
-    <p id="key">
-      N.B. Infrequent events are prefixed with a
-      <%= image_tag "highlight_icon.png", alt: "asterisk", width: "14", height: "16" %>
-    </p>
-    <%= render "social_listings" %>
-    <p class="note"><%= tc("site_name") %> lists the next <%= SOLDNTime::MAX_LISTING_DATES %> days of events</p>
-  </section>
+  <div class="dated-listings">
+    <section id="social_dances" class="listings">
+      <%= socialsh2(@socials_dates, @today, { class: "listings-heading" }) do %>
+        <em>Dance!</em>
+        Clubs and Social dancing
+      <% end %>
+      <p id="key">
+        N.B. Infrequent events are prefixed with a
+        <%= image_tag "highlight_icon.png", alt: "asterisk", width: "14", height: "16" %>
+      </p>
+      <%= render "social_listings" %>
+      <p class="note"><%= tc("site_name") %> lists the next <%= SOLDNTime::MAX_LISTING_DATES %> days of events</p>
+    </section>
+
+    <%= render "workshops" %>
+  </div>
 
   <section id="classes" class="listings">
     <h2 class="listings-heading">

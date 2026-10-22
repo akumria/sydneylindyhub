@@ -54,8 +54,9 @@ main {
     order: 1;
   }
 
-  #social_dances {
+  .dated-listings {
     order: 2;
+    min-width: 0;
   }
 
   #key {

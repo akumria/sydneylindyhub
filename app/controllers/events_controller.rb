@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class EventsController < CmsBaseController
+  before_action :redirect_workshop_editor, only: %i[edit update]
   def index
     @events =
       Event
@@ -23,6 +24,7 @@ class EventsController < CmsBaseController
 
   def edit
     @event = Event.find(params[:id])
+
     @form = EditEventForm.from_event(@event)
   end
 
@@ -69,6 +71,11 @@ class EventsController < CmsBaseController
   end
 
   private
+
+  def redirect_workshop_editor
+    event = Event.find(params[:id])
+    redirect_to edit_workshop_path(event) if event.workshop?
+  end
 
   def create_event_params
     event_params(CreateEventForm.attribute_names)

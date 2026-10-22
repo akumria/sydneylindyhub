@@ -1,0 +1,24 @@
+<% if @workshop_dates.any? %>
+  <section id="workshops" class="listings">
+    <h2 class="listings-heading"><em>Workshops</em></h2>
+    <ul class="datelist unstyled">
+      <% @workshop_dates.each do |date, workshops| %>
+        <li class="date_row<%= " today" if date == @today %>">
+          <h3><%= date_header_label_prefix(date, @today) %> <%= l(date, format: :listing_date) %></h3>
+          <ul class="unstyled">
+            <% workshops.each do |workshop| %>
+              <li>
+                <%= postcode_link(workshop.venue_postcode, area: workshop.venue_area) %>
+                <span class="details">
+                  <%= cancelled_label if workshop.cancelled? %>
+                  <%= link_to workshop.title, workshop.url %>
+                  <span class="info">— <%= workshop.location %></span>
+                </span>
+              </li>
+            <% end %>
+          </ul>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>

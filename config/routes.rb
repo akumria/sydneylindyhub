@@ -16,6 +16,8 @@ Rails.application.routes.draw do
     resource :organiser_link, only: %i[create]
   end
 
+  resources :workshops, only: %i[new create edit update]
+
   resources :external_events, only: %i[edit update]
 
   get "map/classes" => "maps#classes", as: :map_classes

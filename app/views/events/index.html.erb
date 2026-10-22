@@ -1,6 +1,7 @@
 <h1 id="events">Events</h1>
 
 <%= link_to "New event", new_event_path, class: "button" %>
+<%= link_to "New workshop exception", new_workshop_path, class: "button" if CITY.sydney? %>
 <label class="sieve-label">Filter: <input type="text" class="sieveInput" autocomplete="off"></label>
 
 <table class="events">

@@ -10,6 +10,9 @@ class ListingsController < ApplicationController
     @classes = Event.listing_classes.includes(:venue, :class_organiser).map { ClassListing.new(it) }
     dates = SOLDNTime.listing_dates
     @socials_dates = SocialsListings.new.build(dates)
+    @workshop_dates = SocialsListings.new(event_finder: lambda { |date|
+      Event.workshops_on_date(date).includes(:venue)
+    }).build(dates)
   end
 
   private

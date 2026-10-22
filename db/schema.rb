@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_20_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_20_000100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -76,6 +76,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_000000) do
     t.string "reminder_email_address"
     t.datetime "last_verified_at"
     t.text "source_notes"
+    t.text "workshop_exception_reason"
     t.index ["frequency", "day", "has_class"], name: "index_events_on_fq_and_day_and_has_class"
     t.index ["frequency", "day", "has_social"], name: "index_events_on_fq_and_day_and_has_social"
     t.index ["frequency", "has_class"], name: "index_events_on_fq_and_has_class"
