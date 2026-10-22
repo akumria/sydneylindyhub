@@ -1,0 +1,17 @@
+<h1>Publish public website</h1>
+<p>Publish the latest saved listings to the public website.</p>
+<% if @publication %>
+  <p>Latest publication: <strong><%= @publication.status.humanize %></strong></p>
+  <p>Requested by <%= @publication.requested_by %> at <%= l(@publication.created_at, format: :long) %>.</p>
+  <% if @publication.status == "failed" %>
+    <p>Publication could not be confirmed. Ask a maintainer to check the worker log and the current public website before retrying.</p>
+  <% end %>
+<% end %>
+<% if !StaticPublication.enabled? %>
+  <p>Publishing is not configured yet.</p>
+<% elsif @active %>
+  <p>A publication is queued or running. Refresh this page to check its progress.</p>
+<% else %>
+  <%= button_to "Publish website", publication_path, method: :post %>
+<% end %>
+<p><%= link_to "Refresh status", publication_path %></p>

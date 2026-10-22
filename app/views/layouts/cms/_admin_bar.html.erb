@@ -5,6 +5,7 @@
   <label for="menu-toggle" class="menu-toggle-btn navlink navlink-right">Menu</label>
 
   <ul class="menu-items">
+    <li class="navlink"><%= link_to "Publish website", publication_path %></li>
     <% navlinks.each do |navlink| %>
       <li class="navlink"><%= link_to navlink.name, navlink.url %></li>
     <% end %>

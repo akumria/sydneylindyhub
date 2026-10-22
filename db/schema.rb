@@ -10,9 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_09_30_090100) do
-  create_schema "heroku_ext"
-
+ActiveRecord::Schema[8.1].define(version: 2026_10_20_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -105,6 +103,16 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_30_090100) do
     t.string "name", null: false
     t.index "lower((email)::text)", name: "index_roles_on_lower_email", unique: true
     t.index ["facebook_ref"], name: "index_roles_on_facebook_ref", unique: true
+  end
+
+  create_table "static_publications", force: :cascade do |t|
+    t.string "status", default: "queued", null: false
+    t.string "requested_by", null: false
+    t.datetime "started_at"
+    t.datetime "finished_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index "(1)", name: "one_active_static_publication", unique: true, where: "((status)::text = ANY ((ARRAY['queued'::character varying, 'running'::character varying])::text[]))"
   end
 
   create_table "venues", id: :serial, force: :cascade do |t|

@@ -37,6 +37,8 @@ Rails.application.routes.draw do
   get "login/verify" => "sessions#verify", as: :verify_login
   delete "logout" => "sessions#destroy", as: "logout"
 
+  resource :publication, only: %i[show create]
+
   resource :account, only: %i[show destroy], controller: :users
 
   namespace :admin do

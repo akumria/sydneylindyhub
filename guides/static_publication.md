@@ -144,6 +144,7 @@ and may need to be repeated after the container is recreated.
 
 - Supply verified listings, real contact details and reviewed legal content;
   development sample listings are not launch content.
+- Enable and operate the editor publication worker described below.
 - Configure `CANONICAL_HOST=www.sydneylindyhub.com` for public URLs and
   `EDITORIAL_HOST=edit.sydneylindyhub.com` for editor login emails, organiser
   update links and audit-feed URLs. Both settings are required and must be
@@ -169,3 +170,41 @@ and may need to be repeated after the container is recreated.
 The prototype exports a current snapshot, not a future dated release, and does
 not promise transactional consistency while editors are changing the source.
 No hosting or database migration is required to evaluate it.
+
+## Editor publishing
+
+Signed-in editors can open **Publish website** in the editorial navigation and
+queue a publication. Requests are saved in PostgreSQL; a unique database index
+allows only one queued/running publication, including concurrent button clicks.
+The page shows queued, running, succeeded or failed; refresh it for updates.
+The worker calls the fixed `bin/publish-static-site --deploy` pipeline, including
+asset build, export and mandatory smoke validation before upload. No request
+parameters supply commands, paths, project names or credentials.
+
+Run the migration, configure `CANONICAL_HOST`, `EDITORIAL_HOST`, the Maps keys,
+`CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`, then set
+`STATIC_PUBLISH_ENABLED=true` for the editorial app and worker. Run a supervised
+worker process on the same checkout/runtime as Rails:
+
+```sh
+bin/rails static_site:publication_worker
+```
+
+The worker needs the build toolchain, Chromium for the smoke check, database
+access and network access to Cloudflare. Credentials stay in its environment.
+It processes one request at a time, with a ten-minute pipeline timeout. Each
+request has an exclusive output directory `tmp/static-publication-ID` and a
+private log `log/static-publication-ID.log`. Do not serve either directory.
+Inspect and rotate these artifacts under the host's retention policy.
+
+A failed build/export/check never reaches upload. A failed or timed-out upload
+can have an uncertain outcome: inspect Cloudflare and the public site before
+retrying. The worker never retries automatically. If a worker dies after
+claiming a request, its status remains running and blocks new publications.
+Stop the worker and ensure its child publication processes have stopped; check
+Cloudflare, then have a maintainer mark that request failed before restarting.
+Queued requests survive restarts. Schedule daily refreshes separately; the
+button does not replace freshness monitoring, backups or consistent snapshots.
+
+This adds local application support only. Worker hosting, credentials and a
+real preview publication still need configuring and verifying before launch.

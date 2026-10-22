@@ -1,0 +1,5 @@
+en:
+  publications:
+    disabled: "Publishing is not configured yet."
+    queued: "Publication queued. Refresh this page to check its progress."
+    busy: "A publication is already queued or running."
