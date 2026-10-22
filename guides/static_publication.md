@@ -1,4 +1,9 @@
-# Static publication proof of concept
+# Static publication operations
+
+Production is live on Cloudflare Pages and publishes through GitHub Actions,
+including the daily 04:15 Sydney schedule. The worker design below exists in
+code but is not deployed; the editor Publish button is disabled. See
+[current hosting status](../HOSTING.md) for verified deployment boundaries.
 
 The canonical launch host is `www.sydneylindyhub.com`. Rails and PostgreSQL remain
 the editorial system; the exported public site needs neither at request time.
@@ -140,18 +145,20 @@ Never put the token in the repository, a command recorded in logs, or an agent
 conversation. The device-flow login is stored in the devcontainer user's home
 and may need to be repeated after the container is recreated.
 
-## Required before launch
+## Current operations and remaining acceptance
 
 - Supply verified listings, real contact details and reviewed legal content;
   development sample listings are not launch content.
-- Enable and operate the editor publication worker described below.
+- Publishing currently runs in GitHub Actions. Connecting the editor button to
+  that workflow is pending; do not enable it without its integration or a worker.
 - Configure `CANONICAL_HOST=www.sydneylindyhub.com` for public URLs and
   `EDITORIAL_HOST=edit.sydneylindyhub.com` for editor login emails, organiser
   update links and audit-feed URLs. Both settings are required and must be
-  non-empty in production. DNS and hosting for the editorial host still need
-  provisioning. Local development defaults to `localhost:3000`.
-- Run an isolated export after edits and daily after **04:00 Australia/Sydney**,
-  accounting for daylight saving. Date aliases are snapshots, not live routes.
+  non-empty in production. The editorial host is deployed on Fly with verified
+  DNS/TLS. Local development defaults to `localhost:3000`.
+- Run an isolated export after edits. GitHub schedules daily publication at
+  **04:15 Australia/Sydney**, after the 04:00 rollover and accounting for daylight
+  saving. Date aliases are snapshots, not live routes.
   Alert on failed/stale exports, and only deploy complete successful releases.
   Exporting from a Neon branch, or any consistent snapshot, is better than
   asking editors to hold still: the guide above says not to promise
@@ -163,15 +170,14 @@ and may need to be repeated after the container is recreated.
   apex-to-www redirect were verified on 2026-10-20.
 - Schedule database backups and prove restoration. Static output is not a
   replacement for the editorial database backup.
-- Decide what `/occasional` is for. It is a route with no inbound link and no
-  sitemap entry, so it 404s on the static site today; export it, redirect it
-  (it currently redirects to `/`), or withdraw it.
+- The exported `_redirects` file sends `/occasional` to `/` with HTTP 302; it
+  is not a separate static listing page.
 
 The prototype exports a current snapshot, not a future dated release, and does
 not promise transactional consistency while editors are changing the source.
 No hosting or database migration is required to evaluate it.
 
-## Editor publishing
+## Editor publishing (implemented locally, not enabled in production)
 
 Signed-in editors can open **Publish website** in the editorial navigation and
 queue a publication. Requests are saved in PostgreSQL; a unique database index
@@ -206,5 +212,6 @@ Cloudflare, then have a maintainer mark that request failed before restarting.
 Queued requests survive restarts. Schedule daily refreshes separately; the
 button does not replace freshness monitoring, backups or consistent snapshots.
 
-This adds local application support only. Worker hosting, credentials and a
-real preview publication still need configuring and verifying before launch.
+The queue/worker support exists in code. No worker is hosted and the editor
+button remains disabled. The public site already publishes through GitHub; a
+GitHub-triggering button integration is planned but has not been deployed.

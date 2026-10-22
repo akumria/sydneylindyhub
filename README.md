@@ -127,15 +127,25 @@ are not included in the .env.example file:
   - `ROLLBAR_POST_SERVER_ITEM_ACCESS_TOKEN` [Rollbar](https://rollbar.com/) is
     used for exception reporting. This value can be found in Account Settings
     => Account Access Tokens in your Rollbar account.
-  - `CANONICAL_HOST` - all variations of the domain will be `301` redirected
-    to this. Set it to `www.sydneylindyhub.com` to have
-    `sydneylindyhub.com` redirect to www, or the reverse. The sitemap, the audit
-    log feed, and the URLs in reminder emails are all built from it, so it must
-    match the domain actually served.
+  - `CANONICAL_HOST` - the public hostname used for the sitemap and static
+    export: `www.sydneylindyhub.com`. It does not configure DNS or redirects.
+  - `EDITORIAL_HOST` - the Rails hostname used in editor-login emails,
+    organiser update links and the audit feed: `edit.sydneylindyhub.com`.
+    Both settings are required in production. Runtime secrets are managed on
+    Fly; see [hosting status](HOSTING.md) and [Fly operations](guides/fly_editorial.md).
 
 ## Environments
 
-- Sydney Production: [Sydney Lindy Hub](https://www.sydneylindyhub.com/) (Cloudflare Pages)
+- Public production: [Sydney Lindy Hub](https://www.sydneylindyhub.com/) on Cloudflare Pages.
+- Production editor: [Editorial application](https://edit.sydneylindyhub.com/) on
+  Fly.io Sydney, backed by Neon; Fastmail handles login email.
+- Staging editor: `sydneylindyhub-staging-editor.fly.dev` is provisioned on Fly
+  but not deployed or configured with runtime secrets yet.
+
+GitHub builds and publishes the static site manually and daily at 04:15 Sydney
+local time. The editor is deployed separately; its Publish website button and
+organiser reminder scheduling are not enabled. See [HOSTING.md](HOSTING.md) for
+verified state and outstanding work.
 
 Upstream deploys three sites using this codebase on heroku:
 

@@ -48,16 +48,21 @@ provided identically to the editor and publisher where applicable.
 
 Cloud Run must use the publisher as a Job, not a detached subprocess after a
 web response: request-based services can lose CPU or shut down while idle.
-The existing editorial queue trigger still needs cloud integration in stage 2.
+The editorial queue trigger has no hosted worker integration. Fly is the
+selected production editor host; publication currently runs in GitHub.
 Build linux/amd64 for Cloud Run. Export files are ephemeral and use memory on
 Cloud Run; measure the Job's memory before selecting its production limit.
 
 ## Boundaries
 
-This stage creates no cloud resources, copies no data to Neon, configures no
-SMTP, and performs no Cloudflare upload. Cloud account permissions, runtime
-secrets, production database migration/import, scheduler and job invocation,
-email delivery, backups and production-domain checks remain stage 2 work.
+The validation results below describe the original local container stage.
+Production has since deployed to Fly.io with Neon and Fastmail; see
+[current hosting status](../HOSTING.md) for live state.
+
+The original local container-validation stage created no cloud resources and
+performed no live upload. Since then, Neon, Fly production, Fastmail and GitHub
+publication have been configured. Staging, worker integration, reminders and
+recovery verification remain separate work; consult HOSTING.md for current state.
 
 ## Validation — 21 October 2026
 

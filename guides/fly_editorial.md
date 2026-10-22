@@ -25,12 +25,12 @@ Never import the development `.env` wholesale; it has development-only settings.
 | --- | --- | --- |
 | `DATABASE_URL` | Writable direct TLS URL for the staging Neon branch | Writable direct TLS URL for production |
 | `SECRET_KEY_BASE` | A unique generated secret | A different persistent generated secret |
-| `SMTP_USER_NAME`, `SMTP_PASSWORD` | Dedicated test Gmail account/app password | Real sender Gmail account/app password |
+| `SMTP_USER_NAME`, `SMTP_PASSWORD` | Dedicated test sender or captured delivery | Fastmail account login/app password |
 | Maps JavaScript/static keys and map ID | Restricted to staging where applicable | Restricted to production where applicable |
 
 Generate each Rails signing secret once with `openssl rand -hex 64` and store it
 in its local secret file. Do not paste credentials into chat or command arguments.
-The current mailer uses Gmail SMTP. Browser Maps keys are public in rendered pages,
+The current mailer uses Fastmail SMTP (port 587 with STARTTLS). Browser Maps keys are public in rendered pages,
 so API/referrer restrictions are essential; keys may be shared if correctly scoped.
 The static Maps key is separate from a referrer-restricted browser key.
 
@@ -104,12 +104,18 @@ check the public output. Organiser reminder scheduling is a separate operation.
 ## Provisioning status
 
 - Both apps, shared IPv4 and IPv6 created in `personal`.
-- Production certificate requested; DNS validation remains pending.
-- Configurations use Sydney; machines will be placed there by deployment.
-- The production web image built and was uploaded successfully on 25 October 2026:
-  `registry.fly.io/sydneylindyhub-prod-editor:deployment-01M5Q1GSBXCMSK8NWRYBZB9NKR`
-  (reported compressed size: 133 MB). No runtime secrets were used for the build.
-- Runtime secrets, schema readiness, deployment and login/editing acceptance are pending.
+- Production DNS and Fly-managed TLS are verified and active.
+- Production runs one 512 MB shared-CPU machine in Sydney with autostop/autostart.
+- Staging remains provisioned only: no image or runtime secrets.
+- Production image `registry.fly.io/sydneylindyhub-prod-editor:2dde371b` is deployed
+  with active secrets. The schema-readiness release check and HTTP health checks
+  passed. `/up`, `/login` and `/` returned 200; unauthenticated editor requests
+  redirect to login.
+- Fastmail login delivery and SPF/DKIM/DMARC were confirmed by the operator.
+  Browser editing is confirmed by audit entry 77 on 25 October 2026.
+- `main` contains the later Auto-Submitted header change, not yet deployed to Fly.
+- Recovery, reminders, Publish website integration and staging acceptance remain
+  outstanding; see [current hosting status](../HOSTING.md).
 - An initial build for the superseded app was cancelled when the two-app naming
   was requested. It did not deploy or access Neon; the unused app was removed.
 
