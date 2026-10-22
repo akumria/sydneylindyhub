@@ -68,7 +68,7 @@ City = Data.define(:key, :map_config, :max_radius_miles, :opengraph_image, :post
         center: Coordinates.new(lat: -33.8688, lng: 151.2093),
         zoom: 10
       )
-      max_radius_miles = 40
+      max_radius_miles = 60 # Includes Katoomba in the Blue Mountains
       new(
         key: :sydney,
         map_config:,

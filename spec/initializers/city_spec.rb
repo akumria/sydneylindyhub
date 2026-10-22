@@ -10,7 +10,7 @@ RSpec.describe City do
       expect(city).to have_attributes(
         key: :sydney,
         center_coordinates: Coordinates.new(lat: -33.8688, lng: 151.2093),
-        max_radius_miles: 40,
+        max_radius_miles: 60,
         country: "Australia",
         opengraph_image: "sydney_lindy_hub_og.svg"
       )

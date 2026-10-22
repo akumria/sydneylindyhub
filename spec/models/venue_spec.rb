@@ -28,6 +28,14 @@ RSpec.describe Venue do
       end
     end
 
+    context "when given the researched Katoomba venue" do
+      it "is valid within the Sydney listing area" do
+        venue = build(:venue, name: "Junction 142", postcode: "2780", lat: -33.7152134, lng: 150.3117222)
+
+        expect(venue).to be_valid
+      end
+    end
+
     context "when given coordinates which are far from the centre of Sydney" do
       it "is invalid" do
         venue = build(:venue, name: "WCJ", lat: 57.6832541, lng: 11.968709)
