@@ -8,7 +8,8 @@ export default class extends Controller {
     apiKey: String,
     mapId: String,
     config: Object,
-    markers: Array
+    markers: Array,
+    static: Boolean
   }
 
   #map = null
@@ -18,7 +19,7 @@ export default class extends Controller {
       apiKey: this.apiKeyValue,
       mapId: this.mapIdValue,
       config: this.configValue,
-      initialMarkers: this.markersValue.map(this._markerData),
+      initialMarkers: this._markersForPage(this.markersValue).map(this._markerData),
       boundsOffsetX: this._sidebarWidth.bind(this),
       mapElement: this.mapTarget
     })
@@ -32,8 +33,19 @@ export default class extends Controller {
   }
 
   _updateWithVenues(venues) {
-    const markersData = venues.map(this._markerData)
+    const markersData = this._markersForPage(venues).map(this._markerData)
     this.#map.updateMarkers(markersData)
+  }
+
+  // On an exported page the query string is the only place the venue can come
+  // from, because the HTML was rendered once at export time and cannot have
+  // known which venue the visitor was arriving for.
+  _markersForPage(venues) {
+    const venueId = Number(new URLSearchParams(window.location.search).get('venue_id'))
+
+    if (!this.staticValue) { return venues }
+
+    return venues.map(venue => ({ ...venue, highlighted: venue.id === venueId }))
   }
 
   _updateFromUrl({url, callback}) {

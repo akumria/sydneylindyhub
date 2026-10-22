@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+#
+# Export the public site, check the result, and optionally publish it to
+# Cloudflare Pages. The export is gated on its own smoke check, so an artifact
+# that fails scripts/check-static-site.mjs is never uploaded.
+#
+# Usage:
+#   CANONICAL_HOST=www.sydneylindyhub.com bin/publish-static-site
+#   CANONICAL_HOST=www.sydneylindyhub.com bin/publish-static-site --deploy
+#
+# Options:
+#   --deploy        upload the export to Cloudflare Pages
+#   --project NAME  Pages project name (default: sydneylindyhub)
+#   --branch NAME   Pages branch (default: main)
+#   --skip-check    upload without the smoke check (warns loudly)
+#
+# Environment:
+#   CANONICAL_HOST  the host the published site will be served from, with no
+#                   port. Everything public in the export is generated from it:
+#                   the sitemap, robots.txt, canonical links and the map links.
+#   OUTPUT          export directory (default: tmp/static-release-<timestamp>)
+
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+deploy=false
+skip_check=false
+project="sydneylindyhub"
+branch="main"
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --deploy) deploy=true ;;
+    --skip-check) skip_check=true ;;
+    --project | --branch)
+      if [ $# -lt 2 ]; then
+        echo "$1 needs a value" >&2
+        exit 64
+      fi
+      case "$1" in
+        --project) project="$2" ;;
+        --branch) branch="$2" ;;
+      esac
+      shift
+      ;;
+    -h | --help)
+      sed -n '3,21p' "$0"
+      exit 0
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2
+      exit 64
+      ;;
+  esac
+  shift
+done
+
+if [ -z "${CANONICAL_HOST:-}" ]; then
+  echo "CANONICAL_HOST is not set." >&2
+  echo "Set it to the host the published site will be served from, with no port:" >&2
+  echo "  CANONICAL_HOST=www.sydneylindyhub.com $0" >&2
+  exit 64
+fi
+
+if [[ "$CANONICAL_HOST" == *:* ]]; then
+  echo "CANONICAL_HOST must not include a port: the exporter accepts a DNS hostname only." >&2
+  exit 64
+fi
+
+# Build the assets here rather than trusting that someone remembered. Webpack
+# does not rewrite an unchanged bundle, so "the builds look older than my
+# change" is not a staleness test you can trust: it is better to spend twenty
+# seconds rebuilding than to publish a site that looks right and behaves like
+# the previous deploy.
+if [ "${ASSETS_PRECOMPILED:-false}" = "true" ]; then
+  echo "==> Using assets precompiled into the image"
+else
+  echo "==> Building assets"
+  bin/rails assets:precompile
+fi
+
+output="${OUTPUT:-tmp/static-release-$(date +%Y%m%d-%H%M%S)}"
+if [ -e "$output" ]; then
+  echo "Output directory already exists: $output (exports never overwrite)" >&2
+  exit 64
+fi
+
+echo "==> Exporting $CANONICAL_HOST to $output"
+CANONICAL_HOST="$CANONICAL_HOST" HOST="$CANONICAL_HOST" OUTPUT="$output" bin/rails static_site:export
+
+# The exporter writes this marker when it fails part way through. It should
+# never be here, but a directory that contains it must never be uploaded.
+if [ -e "$output/EXPORT_FAILED" ]; then
+  echo "The export failed part way through. Do not publish $output." >&2
+  exit 1
+fi
+
+if $skip_check; then
+  echo "==> WARNING: skipping the smoke check. Nothing verified this artifact."
+else
+  echo "==> Checking the export"
+  node scripts/check-static-site.mjs "$output"
+fi
+
+ruby -rjson -e '
+  manifest = JSON.parse(File.read(ARGV[0]))
+  puts format("==> %d pages, %d map datasets, %d assets, listings for %s, generated %s",
+              manifest["pages"].length, manifest["map_data"].length,
+              manifest["assets"].length, manifest["listing_day"], manifest["generated_at"])
+' "$output/export-manifest.json"
+
+if ! $deploy; then
+  echo "==> Export only. Preview it with:"
+  echo "    python3 -m http.server 8088 --directory $output"
+  echo "  or publish it by re-running with --deploy."
+  exit 0
+fi
+
+echo "==> Deploying $output to Cloudflare Pages project $project (branch $branch)"
+yarn dlx wrangler pages deploy "$output" --project-name "$project" --branch "$branch" --commit-dirty=true
