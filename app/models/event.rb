@@ -111,7 +111,7 @@ class Event < ApplicationRecord # rubocop:disable Metrics/ClassLength
   scope :weekly_or_fortnightly, -> { where(frequency: [1, 2]) }
   scope :occasional, -> { where(frequency: 0) }
 
-  scope :active, -> { where("last_date IS NULL OR last_date > ?", Date.current) }
+  scope :active, -> { where("last_date IS NULL OR last_date >= ?", Date.current) }
   scope :ended, -> { where("last_date IS NOT NULL AND last_date < ?", Date.current) }
   scope :active_on, lambda { |date|
     where(

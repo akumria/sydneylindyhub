@@ -17,7 +17,7 @@ class ListingsController < ApplicationController
   def cache_key
     return if Audit.none?
 
-    "listings-#{Audit.last.cache_key}"
+    "listings-#{SOLDNTime.today}-#{Audit.last.cache_key}"
   end
 
   def cache_index(&)

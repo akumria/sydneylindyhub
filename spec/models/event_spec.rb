@@ -102,6 +102,12 @@ RSpec.describe Event do
   end
 
   describe "active.classes" do
+    it "includes classes on their final advertised date" do
+      event = create(:class, last_date: Date.current)
+
+      expect(described_class.listing_classes).to include(event)
+    end
+
     it "returns classes with no 'last date'" do
       event = create(:class, last_date: nil)
       expect(described_class.active.classes).to eq([event])
