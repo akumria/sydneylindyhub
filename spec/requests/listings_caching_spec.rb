@@ -16,16 +16,17 @@ require "rails_helper"
 RSpec.describe "Listings caching" do
   let(:today) { Time.zone.parse("December 20, 2012 12:00") }
 
-  before do
+  around do |example|
+    previous_store = Rails.cache
     # Start from a working store rather than the null store test runs on.
     Rails.cache = ActiveSupport::Cache::MemoryStore.new
 
     # The listings page shows a 14 day window from SOLDNTime.today, so the clock
     # has to be pinned before events will appear on it.
-    Timecop.freeze(today)
+    Timecop.freeze(today) { example.run }
+  ensure
+    Rails.cache = previous_store
   end
-
-  after { Timecop.return }
 
   def create_listed_event(title)
     create(:event, title:, dates: [Date.new(2012, 12, 21)])
