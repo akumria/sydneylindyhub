@@ -80,9 +80,12 @@ email delivery, backups and production-domain checks remain stage 2 work.
 ## Manual GitHub publication
 
 `.github/workflows/publish-static-site.yml` adds **Publish static site → Run
-workflow**. It runs only from `main`, serializes production publications, builds
+workflow**, and publishes daily at 04:15 Australia/Sydney (including daylight
+saving adjustments). Scheduled runs can start late if GitHub is busy, and the
+site updates when export, validation and deployment finish. It runs only from
+`main`, serializes production publications, builds
 the publisher image, queries the source database, exports and checks all public
-pages, then uploads that exact artifact. No schedule or push trigger is enabled.
+pages, then uploads that exact artifact. No push trigger is enabled.
 The job does not migrate, seed, or import the database.
 
 Configure the GitHub `production` environment (or repository-level fallbacks):

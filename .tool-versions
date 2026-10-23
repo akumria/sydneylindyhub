@@ -1,2 +1,3 @@
-ruby 4.0.7
-yarn 1.22.22
+ruby 4.0.8
+nodejs 24.22.1
+# Yarn is managed by Corepack using package.json.

@@ -2,6 +2,9 @@ name: Publish static site
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '15 4 * * *'
+      timezone: Australia/Sydney
 
 permissions:
   contents: read

@@ -9,7 +9,7 @@ calendar and map interface.
 
 ### Development container
 
-The reproducible development environment includes Ruby 4.0.7, Node 22,
+The reproducible development environment includes Ruby 4.0.8, Node 24,
 Yarn 4.2.2, PostgreSQL 17, Firefox, and Chromium. Open the repository in an
 editor that supports the
 [Development Containers specification](https://containers.dev/),

@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
-FROM docker.io/library/node:22-bookworm AS node
-FROM docker.io/library/ruby:4.0.7-slim-bookworm AS base
+FROM docker.io/library/node:24-bookworm AS node
+FROM docker.io/library/ruby:4.0.8-slim-bookworm AS base
 WORKDIR /app
 ENV RAILS_ENV=production BUNDLE_DEPLOYMENT=1 BUNDLE_PATH=/usr/local/bundle \
     BUNDLE_WITHOUT=development:test RAILS_LOG_TO_STDOUT=1 PORT=8080

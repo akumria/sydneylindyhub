@@ -1,6 +1,6 @@
-FROM node:22-bookworm AS node
+FROM docker.io/library/node:24-bookworm AS node
 
-FROM ruby:4.0.7-bookworm
+FROM docker.io/library/ruby:4.0.8-bookworm
 
 COPY --from=node /usr/local/ /usr/local/
 
