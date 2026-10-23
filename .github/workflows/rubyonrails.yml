@@ -10,14 +10,29 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rails-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
+    name: Tests and linters
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     services:
       postgres:
         # Keep in step with .devcontainer/compose.yaml. PostgreSQL 14 reaches
         # end of life on 2026-11-12.
-        image: postgres:17-alpine
+        image: postgres:17-alpine@sha256:eee6c6e1b0894fa4fe0075eb054af9fd1cf39a35321c2d4110626cfe506411fb
+        options: >-
+          --health-cmd "pg_isready -U rails -d rails_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
         ports:
           - "5432:5432"
         env:
@@ -29,9 +44,11 @@ jobs:
       DATABASE_URL: "postgres://rails:password@localhost:5432/rails_test"
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Install Ruby and gems
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@26e5b7d197ebf60545ee9667bcbace0be11ccaec # v1.334.0
         with:
           bundler-cache: true
       - name: enable corepack
@@ -39,12 +56,12 @@ jobs:
       - name: install yarn
         run: corepack install
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
           cache: yarn
       - name: Install Javascript dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
       - name: Compile CSS
         run: bin/rails dartsass:build
       - name: Set up database schema

@@ -13,6 +13,7 @@ concurrency:
 
 jobs:
   publish:
+    name: Publish validated static site
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -23,7 +24,7 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: 8c3ce6c47f419321900a6ecd5148b0f6
     steps:
       - name: Check out source
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -74,7 +75,7 @@ jobs:
             -e CLOUDFLARE_API_TOKEN -e CLOUDFLARE_ACCOUNT_ID -e DEPLOY_SHA \
             --volume "$PWD/tmp/site:/site:ro" \
             slh-publisher:ci bash -euc '
-              yarn dlx wrangler@4.151.3 pages deploy /site \
+              yarn dlx wrangler@4.152.0 pages deploy /site \
                 --project-name sydneylindyhub --branch main --commit-hash "$DEPLOY_SHA"
             '
 
