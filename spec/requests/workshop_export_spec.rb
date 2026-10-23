@@ -5,6 +5,10 @@ require "static_site_exporter" if Rails.root.join("lib/static_site_exporter.rb")
 require "tmpdir"
 
 RSpec.describe "Workshop static export", :aggregate_failures do
+  around do |example|
+    ClimateControl.modify(CANONICAL_HOST: "www.sydneylindyhub.com") { example.run }
+  end
+
   it "exports the dated workshop without private approval or editor links" do
     skip "Static exporter is not installed in this checkout" unless defined?(StaticSiteExporter)
 
