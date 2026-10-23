@@ -47,6 +47,8 @@ COPY --from=build --chown=rails:rails /app/package.json /app/yarn.lock /app/.yar
 COPY --from=build --chown=rails:rails /app/scripts/check-static-site.mjs ./scripts/check-static-site.mjs
 ENV PLAYWRIGHT_BROWSERS_PATH=/opt/playwright ASSETS_PRECOMPILED=true
 RUN yarn playwright install --with-deps chromium && chmod -R a+rX /opt/playwright
+# Wrangler writes project-local temporary files during Pages uploads.
+RUN mkdir -p /app/.wrangler && chown -R rails:rails /app/.wrangler
 USER rails
 CMD ["bin/publish-static-site"]
 
