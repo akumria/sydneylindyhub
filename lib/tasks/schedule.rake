@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
-# Tasks in this file are expected to run on a schedule
-
-desc "Sends reminder emails for events which don't have any future date"
+desc "Preview organiser reminders; MODE=send requires EVENT_IDS, CONFIRM=SEND, SENT_COPY_CONFIRMED=true"
 task send_not_listed_reminders: :environment do
-  # Runs every day at 15:00 GMT
+  ids = ENV.fetch("EVENT_IDS", "").strip
+  abort "EVENT_IDS must be comma-separated numeric IDs" unless ids.empty? || ids.match?(/\A\d+(,\s*\d+)*\z/)
 
-  puts "OrganiserRemindersSender.new.send_unlisted started"
-  event_count = OrganiserRemindersSender.new.send_unlisted
-  puts "Sent emails for #{event_count} #{'event'.pluralize(event_count)}"
-  puts "OrganiserRemindersSender.new.send_unlisted ended"
+  OrganiserReminderRun.new.call(mode: ENV.fetch("MODE", "dry-run"), event_ids: ids.split(",").map(&:to_i),
+                                confirmation: ENV.fetch("CONFIRM", nil),
+                                sent_copy_confirmed: ENV["SENT_COPY_CONFIRMED"] == "true")
+rescue ArgumentError, OrganiserReminderRun::Unconfirmed => e
+  abort e.message
 end
