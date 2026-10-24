@@ -16,7 +16,8 @@ primary_region = "syd"
   PORT = "8080"
   RAILS_ASSUME_SSL = "true"
   RAILS_MAX_THREADS = "3"
-  STATIC_PUBLISH_ENABLED = "false"
+  STATIC_PUBLISH_ENABLED = "true"
+  STATIC_PUBLISH_BACKEND = "github"
 
 [http_service]
   internal_port = 8080

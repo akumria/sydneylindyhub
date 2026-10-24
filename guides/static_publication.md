@@ -1,8 +1,8 @@
 # Static publication operations
 
 Production is live on Cloudflare Pages and publishes through GitHub Actions,
-including the daily 04:15 Sydney schedule. The worker design below exists in
-code but is not deployed; the editor Publish button is disabled. See
+including the daily 04:15 Sydney schedule. The editor button now uses the same workflow; no local publisher worker is
+needed on Fly. See
 [current hosting status](../HOSTING.md) for verified deployment boundaries.
 
 The canonical launch host is `www.sydneylindyhub.com`. Rails and PostgreSQL remain
@@ -149,8 +149,8 @@ and may need to be repeated after the container is recreated.
 
 - Supply verified listings, real contact details and reviewed legal content;
   development sample listings are not launch content.
-- Publishing currently runs in GitHub Actions. Connecting the editor button to
-  that workflow is pending; do not enable it without its integration or a worker.
+- Publishing runs in GitHub Actions, including requests from the production
+  editor button. Keep its Fly token valid and monitor failures.
 - Configure `CANONICAL_HOST=www.sydneylindyhub.com` for public URLs and
   `EDITORIAL_HOST=edit.sydneylindyhub.com` for editor login emails, organiser
   update links and audit-feed URLs. Both settings are required and must be
@@ -177,41 +177,40 @@ The prototype exports a current snapshot, not a future dated release, and does
 not promise transactional consistency while editors are changing the source.
 No hosting or database migration is required to evaluate it.
 
-## Editor publishing (implemented locally, not enabled in production)
+## Editor publishing through GitHub
 
-Signed-in editors can open **Publish website** in the editorial navigation and
-queue a publication. Requests are saved in PostgreSQL; a unique database index
-allows only one queued/running publication, including concurrent button clicks.
-The page shows queued, running, succeeded or failed; refresh it for updates.
-The worker calls the fixed `bin/publish-static-site --deploy` pipeline, including
-asset build, export and mandatory smoke validation before upload. No request
-parameters supply commands, paths, project names or credentials.
+Production uses `STATIC_PUBLISH_BACKEND=github` and `STATIC_PUBLISH_ENABLED=true`.
+The production Fly app also needs `GITHUB_ACTIONS_TOKEN`, a fine-grained personal
+access token restricted to `akumria/sydneylindyhub` with Actions read/write.
+Contents write is not needed. The token stays in Fly secrets and is never sent
+in HTML or to the publication build. Staging remains disabled and has no token.
 
-Run the migration, configure `CANONICAL_HOST`, `EDITORIAL_HOST`, the Maps keys,
-`CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`, then set
-`STATIC_PUBLISH_ENABLED=true` for the editorial app and worker. Run a supervised
-worker process on the same checkout/runtime as Rails:
+Signed-in editors open **Publish website** and submit a request. PostgreSQL's
+existing unique active-publication index prevents duplicate/concurrent requests.
+Rails dispatches only `publish-static-site.yml` on `main`, supplying a generated
+request identifier. The workflow title contains that identifier; it is not used
+as a shell command or export path. No schema migration is required.
 
-```sh
-bin/rails static_site:publication_worker
-```
+Refresh status queries the fixed workflow's runs and matches the request's exact
+identifier. The page links to the run and records queued, running, succeeded or
+failed. Status is refreshed on page requests, not by a background worker; a run
+can finish while the stored status remains queued/running until the next refresh.
+GitHub's workflow serializes button, manual and scheduled publications and only
+succeeds after live manifest verification.
 
-The worker needs the build toolchain, Chromium for the smoke check, database
-access and network access to Cloudflare. Credentials stay in its environment.
-It processes one request at a time, with a ten-minute pipeline timeout. Each
-request has an exclusive output directory `tmp/static-publication-ID` and a
-private log `log/static-publication-ID.log`. Do not serve either directory.
-Inspect and rotate these artifacts under the host's retention policy.
+An explicit API rejection marks the request failed. A dispatch timeout or server
+error has an uncertain outcome: the request stays active and blocks another
+button click. Refresh status to find the run; never automatically redispatch.
+If it cannot be reconciled, a maintainer must inspect GitHub and the public site
+before marking that specific request failed. The lookup checks up to 100 manual
+runs created since just before the request; very old or deleted runs can require
+manual reconciliation. API failures display a generic error without credentials
+or GitHub response bodies. Renew expired tokens before retrying.
 
-A failed build/export/check never reaches upload. A failed or timed-out upload
-can have an uncertain outcome: inspect Cloudflare and the public site before
-retrying. The worker never retries automatically. If a worker dies after
-claiming a request, its status remains running and blocks new publications.
-Stop the worker and ensure its child publication processes have stopped; check
-Cloudflare, then have a maintainer mark that request failed before restarting.
-Queued requests survive restarts. Schedule daily refreshes separately; the
-button does not replace freshness monitoring, backups or consistent snapshots.
+## Optional local worker backend
 
-The queue/worker support exists in code. No worker is hosted and the editor
-button remains disabled. The public site already publishes through GitHub; a
-GitHub-triggering button integration is planned but has not been deployed.
+The original worker remains available when `STATIC_PUBLISH_BACKEND` is unset.
+It requires the publisher runtime, its Cloudflare credentials and a supervised
+`bin/rails static_site:publication_worker` process. It does not claim GitHub-backed
+requests. Do not run this worker against the production queue configured above.
+No such worker is hosted on Fly. Public publishing remains off the web machine.

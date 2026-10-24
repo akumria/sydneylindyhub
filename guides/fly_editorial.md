@@ -70,7 +70,12 @@ tokens and Fly management tokens are not required by the Rails runtime.
 `CANONICAL_HOST=www.sydneylindyhub.com` is for public links in both environments.
 `EDITORIAL_HOST` is the environment-specific browser hostname in the table above.
 `RAILS_ASSUME_SSL=true` accounts for Fly's TLS proxy. `STATIC_PUBLISH_ENABLED=false`
-keeps the editor Publish button disabled: GitHub currently handles publication.
+keeps staging publishing disabled. Production sets `STATIC_PUBLISH_BACKEND=github`
+and `STATIC_PUBLISH_ENABLED=true`; authenticated editors can dispatch the fixed
+GitHub publication workflow. Set `GITHUB_ACTIONS_TOKEN` on the production Fly app
+using a fine-grained token scoped to this repository with Actions read/write.
+No Contents write permission is needed. Treat it as a secret and renew it before
+expiry. GitHub retains the database-read and Cloudflare-upload credentials.
 
 ## DNS and TLS
 
@@ -113,8 +118,9 @@ check the public output. Organiser reminder scheduling is a separate operation.
   redirect to login.
 - Fastmail login delivery and SPF/DKIM/DMARC were confirmed by the operator.
   Browser editing is confirmed by audit entry 77 on 25 October 2026.
-- `main` contains the later Auto-Submitted header change, not yet deployed to Fly.
-- Recovery, reminders, Publish website integration and staging acceptance remain
+- The publishing integration release includes the Auto-Submitted header already
+  present on `main`. See `fly status` for the current deployed image.
+- Recovery, reminders, publication monitoring and staging acceptance remain
   outstanding; see [current hosting status](../HOSTING.md).
 - An initial build for the superseded app was cancelled when the two-app naming
   was requested. It did not deploy or access Neon; the unused app was removed.

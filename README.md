@@ -143,8 +143,9 @@ are not included in the .env.example file:
   but not deployed or configured with runtime secrets yet.
 
 GitHub builds and publishes the static site manually and daily at 04:15 Sydney
-local time. The editor is deployed separately; its Publish website button and
-organiser reminder scheduling are not enabled. See [HOSTING.md](HOSTING.md) for
+local time. The editor is deployed separately; its Publish website button
+triggers that workflow and displays status on refresh. Organiser reminders
+are not scheduled. See [HOSTING.md](HOSTING.md) for
 verified state and outstanding work.
 
 Upstream deploys three sites using this codebase on heroku:

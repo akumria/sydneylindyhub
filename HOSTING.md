@@ -38,10 +38,10 @@ TLS; Rails uses `RAILS_ASSUME_SSL=true` and `force_ssl`. Autostop/autostart allo
 the machine to stop while idle and restart on a request. A stopped machine is
 expected behaviour, not evidence of an outage; verify that requests wake it.
 
-The deployed web image is tagged `2dde371b`. GitHub `main` also contains the later
-`Auto-Submitted` mail-header change (`c0835063`), which has not been deployed to
-Fly. Check current image/status before the next release; a source commit on
-`main` does not automatically deploy the editor.
+The publication integration is deployed as a release image tagged with its
+source commit. Check `fly status` for the current image; a source commit on
+`main` does not automatically deploy the editor. The release also includes the
+Auto-Submitted mail-header change already present on `main`.
 
 The image uses Ruby 4.0.8 and Rails 8.1.4, with Node 24 and Yarn 4.2.2 at build
 time. Assets are compiled into the image. The runtime is non-root and excludes
@@ -109,10 +109,13 @@ credentials without database credentials. Production runs are serialized.
 `EDITORIAL_HOST=edit.sydneylindyhub.com` controls Rails account and organiser
 links. Neither variable configures DNS or performs an apex redirect itself.
 
-The editor's **Publish website** integration is not deployed:
-`STATIC_PUBLISH_ENABLED=false`. Its existing code queues a database request for
-a publisher worker, but no such worker runs on Fly. Connecting the button to
-GitHub Actions is planned; creating a token alone does not enable it.
+The editor's **Publish website** button dispatches this same workflow on `main`.
+Production uses `STATIC_PUBLISH_BACKEND=github`, `STATIC_PUBLISH_ENABLED=true`
+and a repository-scoped Actions read/write token stored as `GITHUB_ACTIONS_TOKEN`
+in Fly secrets. No Contents write permission or Cloudflare credential is granted
+to the editor. Refreshing the page reconciles the queued/running/terminal status
+and shows the matched GitHub run. Ambiguous dispatch errors stay active until
+reconciled, preventing duplicate publication. No Fly publisher worker is needed.
 
 ## Staging and remaining operations
 
