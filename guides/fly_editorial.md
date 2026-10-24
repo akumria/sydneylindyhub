@@ -35,9 +35,11 @@ so API/referrer restrictions are essential; keys may be shared if correctly scop
 The static Maps key is separate from a referrer-restricted browser key.
 
 Do not use the read-only `site_publisher` role for editing or migrations. The
-release command requires migration permissions and a direct Neon endpoint for
-advisory locks. Do not point staging at production. Confirm a restore path before
-running production migrations, and do not schedule staging organiser reminders.
+release command checks for pending migrations using the restricted role; it does
+not apply them. Run required migrations separately with the database owner over
+a direct Neon endpoint, then redeploy. Do not store owner credentials in the web
+app. Do not point staging at production. Confirm a restore path before running
+production migrations, and do not schedule staging organiser reminders.
 
 ## Deploy
 
@@ -59,8 +61,9 @@ fly status -a sydneylindyhub-prod-editor
 fly checks list -a sydneylindyhub-prod-editor
 ```
 
-`--ha=false` avoids creating spare machines. `bin/rails db:migrate` runs before
-web deployment. It does not seed or import data. The two environments have
+`--ha=false` avoids creating spare machines. `bin/rails db:abort_if_pending_migrations`
+runs before web deployment and refuses a release if Neon needs migrations. It does
+not migrate, seed or import data. The two environments have
 separate sessions, database connections and mail credentials. Cloudflare API
 tokens and Fly management tokens are not required by the Rails runtime.
 
@@ -103,7 +106,10 @@ check the public output. Organiser reminder scheduling is a separate operation.
 - Both apps, shared IPv4 and IPv6 created in `personal`.
 - Production certificate requested; DNS validation remains pending.
 - Configurations use Sydney; machines will be placed there by deployment.
-- Runtime secrets, migrations, deployment and login/editing acceptance are pending.
+- The production web image built and was uploaded successfully on 25 October 2026:
+  `registry.fly.io/sydneylindyhub-prod-editor:deployment-01M5Q1GSBXCMSK8NWRYBZB9NKR`
+  (reported compressed size: 133 MB). No runtime secrets were used for the build.
+- Runtime secrets, schema readiness, deployment and login/editing acceptance are pending.
 - An initial build for the superseded app was cancelled when the two-app naming
   was requested. It did not deploy or access Neon; the unused app was removed.
 

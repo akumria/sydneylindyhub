@@ -6,7 +6,8 @@ primary_region = "syd"
   build-target = "web"
 
 [deploy]
-  release_command = "bin/rails db:migrate"
+  # Runtime credentials edit data; schema migrations are an explicit owner operation.
+  release_command = "bin/rails db:abort_if_pending_migrations"
   release_command_timeout = "5m"
 
 [env]
