@@ -4,7 +4,7 @@
 class ApplicationMailer < ActionMailer::Base
   include CityHelper
 
-  default from: -> { tc("email_address") }
+  default from: -> { tc("email_address") }, "Auto-Submitted" => "auto-generated"
   layout "mailer"
 
   def default_url_options
