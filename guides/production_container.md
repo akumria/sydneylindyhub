@@ -23,6 +23,9 @@ It never migrates or edits the source database. Evidence goes under
 
 ## Runtime configuration
 
+For the Fly.io editorial deployment, see [Fly editorial setup](fly_editorial.md).
+The Cloud Run notes below remain relevant only if that platform is chosen later.
+
 Both images require `DATABASE_URL`, `SECRET_KEY_BASE`, `CANONICAL_HOST`
 (public host) and `EDITORIAL_HOST` (Rails host). Supply secrets at runtime.
 Set `RAILS_ASSUME_SSL=true` behind Cloud Run's TLS-terminating proxy.

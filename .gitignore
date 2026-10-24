@@ -19,3 +19,7 @@ vendor/bundle
 .yardoc
 
 /config/master.key
+
+# Local Fly editorial runtime secrets
+.env.fly-prod-editor
+.env.fly-staging-editor
