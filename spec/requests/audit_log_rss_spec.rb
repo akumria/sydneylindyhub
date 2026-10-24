@@ -53,6 +53,18 @@ RSpec.describe "Audit Log RSS feed" do
     end
   end
 
+  it "uses the editorial host for feed and item links while retaining the public feed ID", :aggregate_failures do
+    create(:venue)
+
+    ClimateControl.modify(EDITORIAL_HOST: "edit.example.com", AUDIT_LOG_PASSWORD: "pass") do
+      get "/audit_log.atom?password=pass"
+    end
+
+    expect(response.body).to include("<id>https://www.swingoutlondon.co.uk</id>")
+    expect(response.body).to include('href="https://edit.example.com/audit_log.atom"')
+    expect(response.body).to include("https://edit.example.com/venues/")
+  end
+
   private
 
   def fixture_file(filename)

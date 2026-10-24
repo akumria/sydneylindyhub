@@ -57,7 +57,8 @@ Rails.application.configure do
   # config.action_mailer.raise_delivery_errors = false
 
   # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "example.com" }
+  editorial_host = ENV.fetch("EDITORIAL_HOST", nil).presence || ENV.fetch("CANONICAL_HOST", nil)
+  config.action_mailer.default_url_options = { host: editorial_host || "example.com", protocol: "https" }
 
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via rails credentials:edit.
   if ENV["SMTP_USER_NAME"].present?
@@ -86,7 +87,7 @@ Rails.application.configure do
   # config.active_record.attributes_for_inspect = [ :id ]
 
   # Enable DNS rebinding protection and other `Host` header attacks.
-  config.hosts << ENV["CANONICAL_HOST"] if ENV["CANONICAL_HOST"]
+  config.hosts += [ENV.fetch("CANONICAL_HOST", nil), ENV.fetch("EDITORIAL_HOST", nil)].compact_blank
   # config.hosts = [
   #   "example.com",     # Allow requests from example.com
   #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`

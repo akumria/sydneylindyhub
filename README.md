@@ -85,3 +85,22 @@ There are currently 3 sites deployed using this codebase on heroku:
   `swing-out-bristol`)
 - Staging: https://soldn-staging.herokuapp.com/ (heroku app: `soldn-staging`)- used for testing changes.
 (Protected by HTTP Basic Authentication)
+
+### Optional editorial hostname
+
+By default Rails serves the public site and editorial tools on `CANONICAL_HOST`.
+To serve the public site separately, set `EDITORIAL_HOST` to the hostname running
+Rails, for example `edit.example.org`, and leave `CANONICAL_HOST` set to the
+public hostname. Both settings contain hostnames, without a scheme or path.
+An unset or empty `EDITORIAL_HOST` preserves the single-host behavior.
+
+Rails canonicalizes requests to the editorial host when configured. Organiser
+update links, audit item links and the audit feed self-link use that host;
+the feed ID retains the public site's identity. Mailer-generated URLs also use
+the editorial host. Public map links and public site identity stay unchanged.
+This setting does not publish a separate public site or restrict access to
+editorial routes: the existing authentication remains required.
+
+When using Facebook login, configure the Facebook application's allowed domains
+and OAuth callback URL for the editorial host before switching traffic. Start
+login on that host so session cookies and OAuth state remain on the same host.
