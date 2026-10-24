@@ -9,7 +9,13 @@ class OrganiserReminderSender
   def send!(event)
     return if event.last_reminder_delivered_at&.after?(1.week.ago)
 
-    mailer.reminder_email(to: event.reminder_email_address, event:).deliver_later
+    message = mailer.reminder_email(to: event.reminder_email_address, event:).deliver_now
+    event.email_deliveries.create!(recipient: event.reminder_email_address)
+    message
+  end
+
+  def preview(event)
+    mailer.reminder_email(to: event.reminder_email_address, event:).message
   end
 
   private

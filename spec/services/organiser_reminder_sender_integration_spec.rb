@@ -48,6 +48,20 @@ RSpec.describe OrganiserReminderSender do
       end
     end
 
+    it "does not record acceptance when submission fails", :aggregate_failures do
+      event = create(:social, :occasional, :with_organiser_token, reminder_email_address: "organiser@example.com")
+      delivery = instance_double(ActionMailer::MessageDelivery)
+      allow(OrganiserMailer).to receive(:reminder_email).and_return(delivery)
+      allow(delivery).to receive(:deliver_now).and_raise(IOError, "uncertain transport")
+      expect { described_class.new.send!(event) }.to raise_error(IOError)
+      expect(event.email_deliveries).to be_empty
+    end
+
+    it "does not create delivery history just by rendering a message" do
+      event = create(:social, :occasional, :with_organiser_token, reminder_email_address: "organiser@example.com")
+      expect { described_class.new.preview(event) }.not_to change(EmailDelivery, :count)
+    end
+
     context "when the service is run several times in the same week" do
       it "only sends one email" do
         organiser_token = "41b783b5e27fb2eddd5456a182db56c4"

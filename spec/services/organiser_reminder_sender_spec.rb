@@ -7,17 +7,18 @@ require "active_support/core_ext/numeric/time"
 
 RSpec.describe OrganiserReminderSender do
   describe "send!" do
-    it "enqueues an email to be sent" do
+    it "submits an email and records acceptance" do
       mail = fake_mail
       mailer = fake_mailer(mail)
-      event = instance_double("Event", reminder_email_address: "herbert@white.com", last_reminder_delivered_at: nil)
+      event = instance_double("Event", reminder_email_address: "herbert@white.com", last_reminder_delivered_at: nil,
+                                       email_deliveries: double(create!: true))
       sender = described_class.new(mailer:)
 
       sender.send!(event)
 
       aggregate_failures do
         expect(mailer).to have_received(:reminder_email).with(to: "herbert@white.com", event:)
-        expect(mail).to have_received(:deliver_later)
+        expect(mail).to have_received(:deliver_now)
       end
     end
 
@@ -30,21 +31,30 @@ RSpec.describe OrganiserReminderSender do
 
         sender.send!(event)
 
-        expect(mail).not_to have_received(:deliver_later)
+        expect(mail).not_to have_received(:deliver_now)
       end
     end
 
     context "when an email was sent more than a week ago" do
-      it "enqueues an email to be sent" do
+      it "submits an email and records acceptance" do
         mail = fake_mail
         mailer = fake_mailer(mail)
-        event = instance_double("Event", reminder_email_address: "herbert@white.com", last_reminder_delivered_at: 8.days.ago)
+        event = instance_double("Event", reminder_email_address: "herbert@white.com", last_reminder_delivered_at: 8.days.ago,
+                                         email_deliveries: double(create!: true))
         sender = described_class.new(mailer:)
 
         sender.send!(event)
 
-        expect(mail).to have_received(:deliver_later)
+        expect(mail).to have_received(:deliver_now)
       end
+    end
+
+    it "renders a preview without submitting mail", :aggregate_failures do
+      mail = fake_mail
+      event = instance_double("Event", reminder_email_address: "herbert@white.com")
+      sender = described_class.new(mailer: fake_mailer(mail))
+      expect(sender.preview(event)).to eq(mail.message)
+      expect(mail).not_to have_received(:deliver_now)
     end
 
     def fake_mailer(mail = fake_mail)
@@ -52,7 +62,7 @@ RSpec.describe OrganiserReminderSender do
     end
 
     def fake_mail
-      instance_double("ActionMailer::MessageDelivery", deliver_later: double)
+      instance_double("ActionMailer::MessageDelivery", deliver_now: double, message: double)
     end
   end
 end
