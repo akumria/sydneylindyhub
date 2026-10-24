@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# Build first; this check creates only disposable containers and an empty database.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+engine="${CONTAINER_ENGINE:-podman}"
+image="${CONTAINER_IMAGE:-localhost/swing-out-london-web:local}"
+suffix="$$"
+network="soldn-check-$suffix"
+database="soldn-check-db-$suffix"
+web="soldn-check-web-$suffix"
+output="$PWD/tmp/container-check-$suffix"
+mkdir -p "$output"
+cleanup() {
+  "$engine" logs "$web" > "$output/web.log" 2>&1 || true
+  "$engine" logs "$database" > "$output/database.log" 2>&1 || true
+  "$engine" rm -f "$web" "$database" >/dev/null 2>&1 || true
+  "$engine" network rm "$network" >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+"$engine" network create "$network" >/dev/null
+"$engine" run -d --name "$database" --network "$network" \
+  -e POSTGRES_PASSWORD=local-check-only -e POSTGRES_DB=soldn_check \
+  docker.io/library/postgres:14-alpine >/dev/null
+for attempt in {1..60}; do
+  if "$engine" exec "$database" pg_isready -h 127.0.0.1 -U postgres -d soldn_check >/dev/null 2>&1; then break; fi
+  sleep 1
+done
+"$engine" exec "$database" pg_isready -h 127.0.0.1 -U postgres -d soldn_check >/dev/null
+secret="$(openssl rand -hex 64)"
+environment=(--network "$network"
+  -e "DATABASE_URL=postgresql://postgres:local-check-only@$database/soldn_check"
+  -e "SECRET_KEY_BASE=$secret" -e CANONICAL_HOST=www.example.test)
+"$engine" run --rm "${environment[@]}" "$image" bin/rails release > "$output/release.log" 2>&1
+"$engine" run --rm "${environment[@]}" "$image" bin/rails runner \
+  'abort "Database unavailable" unless Event.count.zero?; abort "Must run as non-root" if Process.uid.zero?'
+"$engine" run -d --name "$web" "${environment[@]}" -e PORT=8097 "$image" >/dev/null
+for attempt in {1..60}; do
+  if "$engine" exec "$web" curl -fsS -H 'Host: www.example.test' \
+    http://localhost:8097/up > "$output/health.html" 2>/dev/null; then break; fi
+  sleep 1
+done
+"$engine" exec "$web" curl -fsS -H 'Host: www.example.test' \
+  http://localhost:8097/up > "$output/health.html"
+for path in / /login; do
+  "$engine" exec "$web" curl -fsS -H 'Host: www.example.test' -H 'X-Forwarded-Proto: https' \
+    "http://localhost:8097$path" >> "$output/pages.html"
+done
+"$engine" exec "$web" sh -c \
+  'test ! -e /app/.env && test ! -e /app/config/master.key && test ! -e /app/.git && ! command -v node'
+"$engine" exec "$web" ruby -e \
+  'abort "Missing precompiled assets" if Dir["public/assets/application-*.css"].empty?'
+"$engine" exec "$web" curl -fsS -H 'Host: www.example.test' -H 'X-Forwarded-Proto: https' \
+  http://localhost:8097/assets/application_http_errors.css > "$output/error.css"
+for extension in css js; do
+  asset="$("$engine" exec "$web" ruby -e 'puts Dir["public/assets/application-*." + ARGV.first].first.to_s.delete_prefix("public")' "$extension")"
+  test -n "$asset"
+  "$engine" exec "$web" curl -fsS -H 'Host: www.example.test' -H 'X-Forwarded-Proto: https' \
+    "http://localhost:8097$asset" > "$output/application.$extension"
+done
+status="$("$engine" exec "$web" curl -s -o /dev/null -w '%{http_code}' \
+  -H 'Host: www.example.test' http://localhost:8097/login)"
+test "$status" = 301
+printf 'PASS: release, database, non-root user, custom PORT, health, homepage, login, assets and secret exclusions. Evidence: %s\n' "$output"

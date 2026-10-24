@@ -85,3 +85,8 @@ There are currently 3 sites deployed using this codebase on heroku:
   `swing-out-bristol`)
 - Staging: https://soldn-staging.herokuapp.com/ (heroku app: `soldn-staging`)- used for testing changes.
 (Protected by HTTP Basic Authentication)
+
+## Optional container deployment
+
+See [production container instructions](guides/production_container.md) for an
+optional web image, runtime configuration and a disposable local smoke check.
