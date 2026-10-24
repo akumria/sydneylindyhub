@@ -1,7 +1,13 @@
 name: Publish static site
+run-name: ${{ inputs.publication_id && format('Website publication {0}', inputs.publication_id) || 'Publish static site' }}
 
 on:
   workflow_dispatch:
+    inputs:
+      publication_id:
+        description: Editorial publication request identifier
+        type: string
+        required: false
   schedule:
     - cron: '15 4 * * *'
       timezone: Australia/Sydney

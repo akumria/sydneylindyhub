@@ -3,9 +3,15 @@
 <% if @publication %>
   <p>Latest publication: <strong><%= @publication.status.humanize %></strong></p>
   <p>Requested by <%= @publication.requested_by %> at <%= l(@publication.created_at, format: :long) %>.</p>
-  <% if @publication.status == "failed" %>
-    <p>Publication could not be confirmed. Ask a maintainer to check the worker log and the current public website before retrying.</p>
+  <% if @run_url %>
+    <p><%= link_to "View publication run", @run_url %></p>
   <% end %>
+  <% if @publication.status == "failed" %>
+    <p>Publication could not be confirmed. Check the publication run and the current public website before retrying.</p>
+  <% end %>
+<% end %>
+<% if @status_error %>
+  <p role="alert"><%= @status_error %></p>
 <% end %>
 <% if !StaticPublication.enabled? %>
   <p>Publishing is not configured yet.</p>

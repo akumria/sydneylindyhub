@@ -3,3 +3,5 @@ en:
     disabled: "Publishing is not configured yet."
     queued: "Publication queued. Refresh this page to check its progress."
     busy: "A publication is already queued or running."
+    rejected: "GitHub rejected the publication request. Ask a maintainer to check publishing access."
+    unconfirmed: "GitHub could not confirm the publication status. Refresh status before retrying; ask a maintainer if it stays queued."

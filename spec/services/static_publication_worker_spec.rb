@@ -10,6 +10,12 @@ RSpec.describe StaticPublicationWorker, :aggregate_failures do
     ClimateControl.modify(STATIC_PUBLISH_ENABLED: "true") { example.run }
   end
 
+  it "does not claim GitHub-backed requests" do
+    publication = StaticPublication.create!(requested_by: "editor@example.com")
+    ClimateControl.modify(STATIC_PUBLISH_BACKEND: "github", GITHUB_ACTIONS_TOKEN: "test-token") { worker.run_once }
+    expect(publication.reload.status).to eq("queued")
+  end
+
   it "does nothing without queued work" do
     expect(worker.run_once).to be_nil
   end

@@ -8,6 +8,7 @@ class StaticPublicationWorker
 
   def run_once
     return unless StaticPublication.enabled?
+    return if StaticPublication.github?
 
     publication = claim
     return unless publication
