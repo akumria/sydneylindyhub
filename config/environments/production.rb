@@ -72,9 +72,9 @@ Rails.application.configure do
   if ENV["SMTP_USER_NAME"].present?
     config.action_mailer.delivery_method = :smtp
     config.action_mailer.smtp_settings = {
-      address: "smtp.gmail.com",
+      address: "smtp.fastmail.com",
       port: 587,
-      domain: "example.com",
+      domain: "sydneylindyhub.com",
       user_name: ENV.fetch("SMTP_USER_NAME"),
       password: ENV.fetch("SMTP_PASSWORD"),
       authentication: "plain",
