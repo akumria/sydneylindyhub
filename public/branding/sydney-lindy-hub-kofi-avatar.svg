@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 64 64">
+  <title>Sydney Lindy Hub</title>
+  <rect width="64" height="64" fill="#102f3a"/>
+  <g transform="translate(6.4 6.4) scale(0.8)">
+  <path d="M42 19C36 12 23 13 20 22C16 33 47 29 44 41C42 52 25 54 17 46"
+        fill="none" stroke="#e7b24b" stroke-width="8" stroke-linecap="round"/>
+  <path d="M51 7L53 12L58 14L53 16L51 21L49 16L44 14L49 12Z" fill="#f7e5b8"/>
+</g></svg>
