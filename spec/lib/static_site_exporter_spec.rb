@@ -8,6 +8,8 @@ RSpec.describe StaticSiteExporter do
   # One export exercises the complete publishable artifact, including its dependent files.
   # rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations
   it "exports public navigation and map data without editor pages or CSRF tokens" do
+    edited_at = Time.zone.local(2020, 1, 2, 12)
+    create(:audit, auditable: create(:event), created_at: edited_at)
     Dir.mktmpdir do |directory|
       output = Pathname.new(directory).join("site")
       exporter = described_class.new(output:, host: "www.sydneylindyhub.com")
@@ -23,6 +25,10 @@ RSpec.describe StaticSiteExporter do
         exporter.export
       end
       manifest = JSON.parse(output.join("export-manifest.json").read)
+      footer = Nokogiri::HTML(output.join("index.html").read).at_css(".website-footer .last-updated")
+      expect(footer.text).to include("Listings last edited #{I18n.l(edited_at, format: :last_updated)}")
+      expect(footer.at_css("time.site-published")["datetime"]).to eq(manifest.fetch("generated_at"))
+      expect(footer.text).to include("Site published", "(Sydney)")
       expect(manifest.fetch("pages")).to include("/", "/privacy", "/map/classes/Monday", "/map/socials/today")
       expect(output.join("login")).not_to exist
       expect(output.join("admin")).not_to exist

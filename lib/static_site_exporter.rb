@@ -26,6 +26,7 @@ class StaticSiteExporter
     attack_enabled = Rack::Attack.enabled
     Rack::Attack.enabled = false
     Rails.cache.clear
+    @generated_at = Time.current
     @output.mkpath
     html_routes.each { |route| export_html(route) }
     map_routes.each { |route| write_response("#{route}.json") }
@@ -47,7 +48,7 @@ class StaticSiteExporter
         Cache-Control: public, max-age=31536000, immutable
     RULES
     @output.join("export-manifest.json").write(JSON.pretty_generate(
-                                                 generated_at: Time.current.iso8601, listing_day: SOLDNTime.today.iso8601,
+                                                 generated_at: @generated_at.iso8601, listing_day: SOLDNTime.today.iso8601,
                                                  host: @host, pages: @pages, map_data: map_routes.map { "#{it}.json" },
                                                  assets: @assets.uniq.sort
                                                ))
@@ -81,6 +82,7 @@ class StaticSiteExporter
 
   def export_html(route)
     document = Nokogiri::HTML(get(route))
+    stamp_publication(document)
     document.css("meta[name^='csrf-']").remove
     document.css("link[rel='author']").each { it["href"] = "/humans.txt" }
     document.css("[src], [href]").each do |node|
@@ -101,6 +103,19 @@ class StaticSiteExporter
 
   def write_response(route)
     write(route.delete_prefix("/"), get(route))
+  end
+
+  def stamp_publication(document)
+    footer = document.at_css(".website-footer .last-updated")
+    return unless footer
+
+    timestamp = Nokogiri::XML::Node.new("time", document)
+    timestamp["class"] = "site-published"
+    timestamp["datetime"] = @generated_at.iso8601
+    published_at = I18n.l(@generated_at.in_time_zone("Australia/Sydney"), format: :last_updated)
+    timestamp.content = "Site published #{published_at} (Sydney)"
+    footer.add_child("<br>")
+    footer.add_child(timestamp)
   end
 
   # Everything in public/ is meant to be served, so copy all of it. That
