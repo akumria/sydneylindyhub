@@ -104,7 +104,8 @@ curl --fail https://edit.sydneylindyhub.com/login
 `/up` proves boot only. Verify database-backed pages, receipt of login emails,
 the environment-specific link hostname, sign-in and saving an edit. Verify real
 client-IP handling for throttling. Publish production edits through GitHub and
-check the public output. Organiser reminder scheduling is a separate operation.
+check the public output. Organiser reminders now have a separate manual GitHub dry-run/send workflow;
+see [reminder operations](organiser_reminders.md). There is no reminder schedule.
 
 ## Provisioning status
 

@@ -126,10 +126,14 @@ email delivery, deployment and acceptance checks. It must not use production
 write credentials or send reminders to copied real recipients. No static
 staging publication target is configured.
 
-Organiser reminders are not scheduled. The current task uses in-process
-`deliver_later`; it needs reliable completion, accurate delivery recording,
-dry-run support and overlap protection before unattended use. The last read-only
-production check found zero configured reminder recipients and zero due emails.
+Organiser reminders have a manual GitHub dry-run/send workflow, with no schedule.
+Dry-run defaults to the existing read-only publication connection and prints
+masked previews. Send needs explicit event IDs, confirmation, verified Fastmail
+Sent-copy retention and credentials in `production-reminders`. Submission is
+synchronous and recorded only after SMTP acceptance; uncertain outcomes stop the
+batch for manual review. See [reminder operations](guides/organiser_reminders.md).
+The last production check found zero configured reminder contacts; configuring
+recipients and a real send rehearsal remain separate operator actions.
 
 Other follow-ups are recovery/restore verification, failure and stale-publication
 alerts, client-IP/throttling acceptance, and a complete browser edit → publish →
