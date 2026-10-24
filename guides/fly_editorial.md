@@ -112,7 +112,7 @@ check the public output. Organiser reminder scheduling is a separate operation.
 - Production DNS and Fly-managed TLS are verified and active.
 - Production runs one 512 MB shared-CPU machine in Sydney with autostop/autostart.
 - Staging remains provisioned only: no image or runtime secrets.
-- Production image `registry.fly.io/sydneylindyhub-prod-editor:2dde371b` is deployed
+- Production image `registry.fly.io/sydneylindyhub-prod-editor:5df6db5f` is deployed
   with active secrets. The schema-readiness release check and HTTP health checks
   passed. `/up`, `/login` and `/` returned 200; unauthenticated editor requests
   redirect to login.
@@ -128,3 +128,17 @@ check the public output. Organiser reminder scheduling is a separate operation.
 References: [Fly configuration](https://docs.fly.io/reference/configuration),
 [autostop/autostart](https://docs.fly.io/launch/autostop-autostart),
 [custom domains](https://docs.fly.io/networking/custom-domain).
+
+## Publishing acceptance — 25 October 2026
+
+The GitHub-backed production release is `5df6db5f`. Full local `bin/rake` passed
+815 examples with 100% line coverage; RuboCop, ERB and stylesheet checks passed.
+An authenticated form POST as the production admin created publication 1 without
+sending a login email. Status refresh observed Queued → Running → Succeeded and
+linked the exact workflow run:
+[40105757315](https://github.com/akumria/sydneylindyhub/actions/runs/40105757315).
+The workflow's export/browser checks, Cloudflare upload and live manifest
+comparison all succeeded. The completed record has start/finish timestamps and
+no longer blocks another publication. Direct public-manifest fetching from the
+agent environment returned an HTTP error; the successful live comparison above
+was performed by the GitHub runner. Staging and reminders remain unchanged.
