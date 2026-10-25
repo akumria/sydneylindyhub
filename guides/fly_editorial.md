@@ -105,7 +105,8 @@ curl --fail https://edit.sydneylindyhub.com/login
 the environment-specific link hostname, sign-in and saving an edit. Verify real
 client-IP handling for throttling. Publish production edits through GitHub and
 check the public output. Organiser reminders now have a separate manual GitHub dry-run/send workflow;
-see [reminder operations](organiser_reminders.md). There is no reminder schedule.
+see [reminder operations](organiser_reminders.md). Scheduled sends run Mondays
+at 10:00 am Australia/Sydney.
 
 ## Provisioning status
 

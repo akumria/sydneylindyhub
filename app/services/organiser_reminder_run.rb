@@ -12,13 +12,9 @@ class OrganiserReminderRun
     @output = output
   end
 
-  def call(mode: "dry-run", event_ids: [], confirmation: nil, sent_copy_confirmed: false)
+  def call(mode: "dry-run", event_ids: [])
     raise ArgumentError, "Mode must be dry-run or send" unless mode.in?(%w[dry-run send])
     return process(event_ids, dry_run: true) if mode == "dry-run"
-
-    unless confirmation == "SEND" && sent_copy_confirmed && event_ids.any?
-      raise ArgumentError, "Send requires event IDs, SEND confirmation and verified Fastmail Sent copies"
-    end
 
     with_lock { process(event_ids, dry_run: false) }
   end

@@ -1,27 +1,18 @@
 name: Organiser reminders
-run-name: Organiser reminders (${{ inputs.mode }})
+run-name: Organiser reminders (${{ inputs.mode || 'send' }})
 
 on:
+  schedule:
+    - cron: "0 10 * * 1"
+      timezone: Australia/Sydney
   workflow_dispatch:
     inputs:
       mode:
         description: Preview only, or submit reminders to Fastmail
         type: choice
         options: [dry-run, send]
-        default: dry-run
+        default: send
         required: true
-      event_ids:
-        description: Comma-separated event IDs from a reviewed dry-run (required for send)
-        type: string
-        required: false
-      confirmation:
-        description: Type SEND to submit messages (leave blank for dry-run)
-        type: string
-        required: false
-      sent_copy_confirmed:
-        description: I verified Fastmail saves SMTP messages from hello@sydneylindyhub.com in Sent
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -36,12 +27,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # Give this environment required reviewers before configuring send credentials.
-    environment: ${{ inputs.mode == 'send' && 'production-reminders' || 'production' }}
+    environment: ${{ (inputs.mode || 'send') == 'send' && 'production-reminders' || 'production' }}
     env:
-      MODE: ${{ inputs.mode }}
-      EVENT_IDS: ${{ inputs.event_ids }}
-      CONFIRM: ${{ inputs.confirmation }}
-      SENT_COPY_CONFIRMED: ${{ inputs.sent_copy_confirmed }}
+      MODE: ${{ inputs.mode || 'send' }}
       CANONICAL_HOST: www.sydneylindyhub.com
       EDITORIAL_HOST: edit.sydneylindyhub.com
     steps:
@@ -50,21 +38,12 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Check mode and explicit send approval
+      - name: Check mode
         run: |
           case "$MODE" in
-            dry-run) ;;
-            send)
-              if [ "$CONFIRM" != SEND ] || [ "$SENT_COPY_CONFIRMED" != true ] || [ -z "$EVENT_IDS" ]; then
-                echo '::error::Send requires event IDs, SEND confirmation and verified Fastmail Sent copies.'
-                exit 1
-              fi ;;
+            dry-run|send) ;;
             *) echo '::error::Invalid mode.'; exit 1 ;;
           esac
-          if [ -n "$EVENT_IDS" ] && ! [[ "$EVENT_IDS" =~ ^[0-9]+(,[[:space:]]*[0-9]+)*$ ]]; then
-            echo '::error::Use comma-separated numeric event IDs.'
-            exit 1
-          fi
 
       - name: Build reminder runtime
         run: docker build --target web --tag slh-reminders:ci .
@@ -73,8 +52,8 @@ jobs:
         env:
           PUBLICATION_DATABASE_URL: ${{ secrets.PUBLICATION_DATABASE_URL }}
           REMINDER_DATABASE_URL: ${{ secrets.REMINDER_DATABASE_URL }}
-          SMTP_USER_NAME: ${{ inputs.mode == 'send' && secrets.SMTP_USER_NAME || '' }}
-          SMTP_PASSWORD: ${{ inputs.mode == 'send' && secrets.SMTP_PASSWORD || '' }}
+          SMTP_USER_NAME: ${{ (inputs.mode || 'send') == 'send' && secrets.SMTP_USER_NAME || '' }}
+          SMTP_PASSWORD: ${{ (inputs.mode || 'send') == 'send' && secrets.SMTP_PASSWORD || '' }}
         run: |
           if [ "$MODE" = send ]; then
             export DATABASE_URL="$REMINDER_DATABASE_URL"
@@ -90,7 +69,7 @@ jobs:
             exit 1
           fi
           docker run --rm \
-            -e MODE -e EVENT_IDS -e CONFIRM -e SENT_COPY_CONFIRMED \
+            -e MODE \
             -e DATABASE_URL -e CANONICAL_HOST -e EDITORIAL_HOST \
             -e SMTP_USER_NAME -e SMTP_PASSWORD \
             slh-reminders:ci bash -euc '

@@ -1,7 +1,12 @@
-# Manual organiser reminders
+# Organiser reminders
 
-Use **Actions → Organiser reminders → Run workflow** on `main`. There is no
-schedule and no automatic send. Leave mode at **dry-run** for normal review.
+Reminders run every **Monday at 10:00 am Australia/Sydney**, automatically
+following daylight saving time. Scheduled runs use **send** mode. GitHub may
+start runs late; any environment approval requirement still applies.
+
+For a manual run, use **Actions → Organiser reminders → Run workflow** on `main`.
+The only workflow input is **mode**, which defaults to **send**.
+Choose **dry-run** when you want previews without submitting mail.
 The existing public-site publication workflow is independent.
 
 ## First configure retained Sent copies
@@ -9,7 +14,7 @@ The existing public-site publication workflow is independent.
 In Fastmail, open **Settings → My email addresses → hello@sydneylindyhub.com →
 Show advanced composing preferences**. In **Save sent messages in**, select
 Sent (or a dedicated folder) and enable saving messages sent through third-party
-clients. Verify the setting by requesting a login email and checking its copy.
+clients. Sent-copy retention and receipt in Gmail were verified on 25 October 2026.
 The application does not save messages through IMAP or silently BCC anyone.
 
 [Fastmail's alias options](https://www.fastmail.help/hc/en-us/articles/360060591073-How-to-set-up-aliases#advanced-composing-preferences)
@@ -25,8 +30,7 @@ The workflow uses the existing `production` environment's
 It builds the `web` image, checks schema readiness and runs
 `bin/rails send_not_listed_reminders` in its default dry-run mode.
 
-Leave `event_ids` blank to review all events with configured reminder contacts,
-or supply comma-separated numeric event IDs to narrow the review. It considers
+The workflow reviews all events with configured reminder contacts. It considers
 only contacts with an organiser update token, no current/future listing, and no
 recorded submission in the previous seven days.
 
@@ -58,12 +62,10 @@ Do not use the read-only publisher connection as the send connection. Send mode
 checks delivery-table/sequence permissions before submitting mail and refuses
 Neon pooled endpoints because its overlap lock is session-scoped.
 
-Run another dry-run, then start the workflow with:
-
-- `mode`: **send**
-- `event_ids`: only the event IDs you just reviewed
-- `confirmation`: **SEND**
-- `sent_copy_confirmed`: checked, after verifying Fastmail's setting
+Select **dry-run** to review eligibility and masked previews. Select **send**
+(the default) to submit reminders to all eligible configured contacts. There are
+no event-ID, confirmation-text or Sent-copy-checkbox inputs in GitHub.
+Starting the workflow in send mode authorizes that batch.
 
 Approve the environment deployment if review protection is enabled. The task
 rechecks eligibility rather than trusting the earlier preview. Sends are
@@ -101,14 +103,12 @@ bin/rails send_not_listed_reminders
 EVENT_IDS=20 bin/rails send_not_listed_reminders
 ```
 
-Actual send requires all explicit approvals plus SMTP and writable database
-configuration. Keep secrets in the environment, never command arguments:
+Actual send requires SMTP and writable database configuration. Keep secrets
+in the environment, never command arguments:
 
 ```sh
-MODE=send EVENT_IDS=20 CONFIRM=SEND SENT_COPY_CONFIRMED=true bin/rails send_not_listed_reminders
+MODE=send EVENT_IDS=20 bin/rails send_not_listed_reminders
 ```
 
-Implementing this workflow does not schedule reminders, configure contact
-addresses, enable Fastmail Sent copies or add GitHub send credentials. Those
-are separate operator actions. A live send rehearsal remains pending until an
-explicitly approved test recipient is configured.
+Configure reminder contacts in the editor. Only eligible configured contacts
+receive reminders; the seven-day submission limit applies to scheduled and manual runs.

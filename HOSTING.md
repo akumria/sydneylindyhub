@@ -126,14 +126,15 @@ email delivery, deployment and acceptance checks. It must not use production
 write credentials or send reminders to copied real recipients. No static
 staging publication target is configured.
 
-Organiser reminders have a manual GitHub dry-run/send workflow, with no schedule.
-Dry-run defaults to the existing read-only publication connection and prints
-masked previews. Send needs explicit event IDs, confirmation, verified Fastmail
-Sent-copy retention and credentials in `production-reminders`. Submission is
+Organiser reminders run Mondays at 10:00 am Australia/Sydney through GitHub,
+with daylight saving handled by the schedule timezone. Manual dry-run/send is also available.
+The mode defaults to send; dry-run uses the existing read-only publication
+connection and prints masked previews. Send uses credentials in
+`production-reminders`. Fastmail Sent-copy retention has been verified. Submission is
 synchronous and recorded only after SMTP acceptance; uncertain outcomes stop the
 batch for manual review. See [reminder operations](guides/organiser_reminders.md).
-The last production check found zero configured reminder contacts; configuring
-recipients and a real send rehearsal remain separate operator actions.
+Reminder contacts must be configured per listing. A one-off production reminder
+was submitted successfully; ongoing eligibility is checked on every run.
 
 Other follow-ups are recovery/restore verification, failure and stale-publication
 alerts, client-IP/throttling acceptance, and a complete browser edit → publish →

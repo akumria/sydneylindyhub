@@ -11,7 +11,7 @@ RSpec.describe OrganiserReminderRun, :aggregate_failures do
   end
 
   def send_options
-    { mode: "send", event_ids: [event.id], confirmation: "SEND", sent_copy_confirmed: true }
+    { mode: "send", event_ids: [event.id] }
   end
 
   it "defaults to a preview without sending or writing history, redacting the recipient and update token" do
@@ -31,9 +31,8 @@ RSpec.describe OrganiserReminderRun, :aggregate_failures do
     expect(runner.call(event_ids: [0])).to include(reviewed: 0)
   end
 
-  it "rejects unsupported modes and unapproved send requests" do
+  it "rejects unsupported modes" do
     expect { runner.call(mode: "other") }.to raise_error(ArgumentError)
-    expect { runner.call(mode: "send") }.to raise_error(ArgumentError)
     expect(ActionMailer::Base.deliveries).to be_empty
   end
 
@@ -43,6 +42,13 @@ RSpec.describe OrganiserReminderRun, :aggregate_failures do
     expect(ActionMailer::Base.deliveries.size).to eq(1)
     expect(event.email_deliveries.count).to eq(1)
     expect(output.string).to include(ActionMailer::Base.deliveries.last.message_id)
+  end
+
+  it "sends all eligible contacts when no event IDs are provided" do
+    event
+    result = runner.call(mode: "send")
+    expect(result).to include(reviewed: 1, submitted: 1)
+    expect(ActionMailer::Base.deliveries.map(&:to)).to eq([[event.reminder_email_address]])
   end
 
   it "skips recently submitted reminders and future listings" do
