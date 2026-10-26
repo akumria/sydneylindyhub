@@ -78,3 +78,12 @@ jobs:
               exec bin/rails send_not_listed_reminders
             '
           echo "Reminder $MODE completed. Counts and masked previews are in the step log." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Confirm scheduled reminder heartbeat
+        if: github.event_name == 'schedule' && vars.REMINDER_HEALTHCHECK_URL != ''
+        env:
+          HEALTHCHECK_URL: ${{ vars.REMINDER_HEALTHCHECK_URL }}
+        run: |
+          curl --fail --silent --show-error --retry 3 --retry-all-errors --max-time 15 \
+            "$HEALTHCHECK_URL"
+          echo "Confirmed scheduled reminder heartbeat." >> "$GITHUB_STEP_SUMMARY"

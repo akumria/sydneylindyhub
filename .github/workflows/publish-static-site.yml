@@ -104,6 +104,15 @@ jobs:
           cmp tmp/site/export-manifest.json tmp/live-manifest.json
           echo "Published https://www.sydneylindyhub.com/" >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Confirm scheduled publication heartbeat
+        if: github.event_name == 'schedule' && vars.PUBLISH_HEALTHCHECK_URL != ''
+        env:
+          HEALTHCHECK_URL: ${{ vars.PUBLISH_HEALTHCHECK_URL }}
+        run: |
+          curl --fail --silent --show-error --retry 3 --retry-all-errors --max-time 15 \
+            "$HEALTHCHECK_URL"
+          echo "Confirmed scheduled publication heartbeat." >> "$GITHUB_STEP_SUMMARY"
+
       - name: Remove temporary export container
         if: always()
         run: docker rm -f static-export 2>/dev/null || true
