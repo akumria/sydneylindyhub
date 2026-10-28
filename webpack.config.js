@@ -7,7 +7,8 @@ module.exports = {
   entry: {
     application: "./app/javascript/application.js",
     application_map: "./app/javascript/application_map.js",
-    application_cms: "./app/javascript/application_cms.js"
+    application_cms: "./app/javascript/application_cms.js",
+    pwa: "./app/javascript/pwa.js"
   },
   output: {
     filename: "[name].js",

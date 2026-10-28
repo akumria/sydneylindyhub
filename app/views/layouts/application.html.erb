@@ -13,8 +13,14 @@
     <link rel="icon" href="/favicon.ico?v=sydney-1" sizes="16x16 32x32 48x48">
     <link rel="icon" href="/icon.svg?v=sydney-1" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=sydney-1" sizes="180x180">
+    <link rel="manifest" href="/manifest.webmanifest?v=sydney-1">
+    <meta name="theme-color" content="#102f3a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <%= csrf_meta_tag %>
     <%= javascript_include_tag :application, defer: true %>
+    <%= javascript_include_tag "pwa", defer: true %>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@500&display=swap">
     <%= stylesheet_link_tag "application", media: "screen" %>
     <meta content="none" name="msapplication-config">

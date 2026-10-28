@@ -1,0 +1,25 @@
+{
+  "name": "Sydney Lindy Hub",
+  "short_name": "Sydney Lindy Hub",
+  "description": "Listings of Lindy Hop classes, socials, swing gigs and vintage clubs in Sydney.",
+  "id": "/?source=pwa",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7e5b8",
+  "theme_color": "#102f3a",
+  "icons": [
+    {
+      "src": "/pwa-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/pwa-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
