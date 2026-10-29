@@ -7,7 +7,7 @@ class Event < ApplicationRecord # rubocop:disable Metrics/ClassLength
   include Frequency
 
   CONSIDERED_NEW_FOR = 1.month
-  WORKSHOP_LISTING_GRACE_DAYS = 2
+  WORKSHOP_LISTING_GRACE_DAYS = 3
 
   belongs_to :venue
   belongs_to :class_organiser, class_name: "Organiser", optional: true
