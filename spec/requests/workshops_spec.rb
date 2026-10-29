@@ -73,7 +73,12 @@ RSpec.describe "Workshop exceptions", :aggregate_failures do
     expect(event.event_instances.first).to be_cancelled
     get root_path
     expect(response.body).to include("Cancelled", "Visiting Blues workshop")
+
     allow(SOLDNTime).to receive(:today).and_return(date + 1.day)
+    get root_path
+    expect(response.body).to include("Cancelled", "Visiting Blues workshop")
+
+    allow(SOLDNTime).to receive(:today).and_return(date + 3.days)
     get root_path
     expect(response.body).not_to include("Visiting Blues workshop")
   end

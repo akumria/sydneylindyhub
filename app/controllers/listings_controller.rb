@@ -12,10 +12,17 @@ class ListingsController < ApplicationController
     @socials_dates = SocialsListings.new.build(dates)
     @workshop_dates = SocialsListings.new(event_finder: lambda { |date|
       Event.workshops_on_date(date).includes(:venue)
-    }).build(dates)
+    }).build(workshop_listing_dates)
   end
 
   private
+
+  # Workshops that ended within the listing grace window remain listed until the end of the listing window.
+  def workshop_listing_dates
+    first_date = SOLDNTime.today - Event::WORKSHOP_LISTING_GRACE_DAYS
+    last_date = SOLDNTime.today + (SOLDNTime::MAX_LISTING_DATES - 1)
+    first_date..last_date
+  end
 
   def cache_key
     return if Audit.none?
